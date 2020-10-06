@@ -33,5 +33,5 @@ Virtual environment disk space: ~900MB
 ## 3 Add new Project in PyCharm
 - Open Pycharm: File > New Project
 - Set Location to GitRepo
-- Project Interpreter: Existing Interpreter, Browse for your virtualenv i.e. `D:\GitHub\AML\Task1\aml\python.exe`
+- Project Interpreter: Existing Interpreter, Browse for your conda env i.e. `D:\GitHub\AML\Task1\aml\python.exe`
 - Create

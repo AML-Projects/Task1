@@ -5,7 +5,7 @@
 Windows 10 - 64-Bit
 
 Requirments: **Patience & nerves**
-Virtual environment disk space: 
+Virtual environment disk space: ~900MB
 
 ## 1 Install/Update Anaconda
 

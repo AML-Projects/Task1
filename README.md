@@ -22,6 +22,8 @@ Virtual environment disk space: ~900MB
 	- Path to new environment should be listed
 - Check if environment active: `conda info --envs`
 
+## 2 Install Packages
+
 ### 2.2 Install requirements
 - Make sure your env is activated
 - `conda list`shows currently installed packages

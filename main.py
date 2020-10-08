@@ -6,11 +6,11 @@ import time
 import argparse
 import pandas as pd
 from shutil import copy
-import tempfile
 
 from source.configuration import Configuration
 from source.engine import Engine
 from logcreator.logcreator import Logcreator
+from helpers import argumenthelper
 
 
 if __name__ == "__main__":
@@ -24,7 +24,8 @@ if __name__ == "__main__":
                         help="Working directory (default: current directory).")
     parser.add_argument('--handin', default=False, type=bool, help="If set to true, whole trainingset used for training")
 
-    args = parser.parse_args()
+    #args = parser.parse_args()
+    args = argumenthelper.parse_args(parser)
     start = time.time()
 
     Configuration.initialize(args.configuration, args.workingdir)
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     if not args.handin:
         engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=y_test_split, x_test_index=None)
     else:
-        csv = engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=None, x_test_index=x_test.index)
+        engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=None, x_test_index=x_test.index)
 
     end = time.time()
     Logcreator.info("Finished processing in %d [s]." % (end - start))

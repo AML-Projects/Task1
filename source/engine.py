@@ -6,6 +6,7 @@ from source.imputers import Imputer
 from source.outliers import Outliers
 from source.normalizer import Normalizer
 from source.regression import Regression
+from helpers import argumenthelper
 import os
 
 class Engine:
@@ -49,7 +50,7 @@ class Engine:
             'ridge': regression.ridge_regression
         }
         reg = switcher.get(regression_method)
-        regressor, x_test_split, y_test_split = reg(x_train=x_train_norm, y_train=y_train_norm, x_test=x_test_norm, split=Configuration.get('regression.split'))
+        regressor, x_test_split, y_test_split = reg(x_train=x_train_norm, y_train=y_train_norm, x_test=x_test_norm, handin=argumenthelper.get_args().handin)
         return regressor, x_test_split, y_test_split
 
     def predict(self, regressor, x_test_split, y_test_split, x_test_index):
@@ -61,6 +62,6 @@ class Engine:
             predicted_values = regressor.predict(x_test_split)
             output_csv = pd.concat([pd.Series(x_test_index.values), pd.Series(predicted_values.flatten())], axis=1)
             output_csv.columns = ["id", "y"]
-            pd.DataFrame.to_csv(output_csv, Configuration.output_directory, index=False)
+            pd.DataFrame.to_csv(output_csv, Configuration.output_directory + '\\submit.csv', index=False)
 
 

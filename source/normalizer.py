@@ -18,3 +18,9 @@ class Normalizer:
         x_train_norm = scaler.fit_transform(x_train)
         x_test_norm = scaler.transform(x_test)
         return x_train_norm, y_train, x_test_norm
+
+    def minmax_scaler(self, x_train, y_train, x_test):
+        scaler = preprocessing.MinMaxScaler()
+        x_train_norm = scaler.fit_transform(x_train)
+        x_test_norm = scaler.transform(x_test)
+        return x_train_norm, y_train, x_test_norm

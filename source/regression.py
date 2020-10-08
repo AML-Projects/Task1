@@ -10,6 +10,8 @@ from sklearn.linear_model import Ridge
 from sklearn import model_selection
 import math
 
+
+
 class Regression:
     def __init__(self):
         Logcreator.info("Start fit model")
@@ -18,7 +20,7 @@ class Regression:
     def ridge_regression(self, x_train, y_train, x_test, handin):
         if not handin:
             x_train_split, x_test_split, y_train_split, y_test_split = model_selection.train_test_split(
-            x_train, y_train, test_size=0.1)
+            x_train, y_train, test_size=0.1, stratify=y_train)
         else:
             x_train_split = x_train
             x_test_split = x_test
@@ -27,7 +29,7 @@ class Regression:
         Logcreator.info("x_train_split: {}".format(x_train_split.shape))
         Logcreator.info("x_test_split: {}".format(x_test_split.shape))
 
-        # Runn Gridsearch for alpha
+        # Run Gridsearch for alpha
         parameters = {
             'alpha': [1e-15, 1e-10, 1e-8, 1e-4, 1e-3, 1e-2, 1, 5, 10, 20, 50, 100, 200, 300, 500, 1000, 1500, 1600,
                       1700, 1799, 1800, 1801, 1805, 1810, 1820, 1850]}

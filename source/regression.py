@@ -20,7 +20,7 @@ class Regression:
     def ridge_regression(self, x_train, y_train, x_test, handin):
         if not handin:
             x_train_split, x_test_split, y_train_split, y_test_split = model_selection.train_test_split(
-            x_train, y_train, test_size=0.1)
+            x_train, y_train, test_size=0.1, random_state=43)
         else:
             x_train_split = x_train
             x_test_split = x_test
@@ -47,4 +47,4 @@ class Regression:
 
         # Use ridge regression
         ridge.fit(x_train_split, y_train_split)
-        return ridge, x_test_split, y_test_split
+        return ridge, x_test_split, y_test_split, x_train_split, y_train_split

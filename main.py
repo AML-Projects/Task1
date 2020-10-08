@@ -52,12 +52,14 @@ if __name__ == "__main__":
     engine = Engine()
 
     #Train
-    regressor, x_test_split, y_test_split = engine.train(x_train=x_train, y_train=y_train, x_test=x_test)
+    regressor, x_test_split, y_test_split,x_train_split, y_train_split = engine.train(x_train=x_train, y_train=y_train, x_test=x_test)
     #Predict
     if not args.handin:
-        engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=y_test_split, x_test_index=None)
+        engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=y_test_split, x_test_index=None,
+                       x_train_split=x_train_split, y_train_split=y_train_split)
     else:
-        engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=None, x_test_index=x_test.index)
+        engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=None, x_test_index=x_test.index,
+                       x_train_split=x_train_split, y_train_split=y_train_split)
 
     end = time.time()
     Logcreator.info("Finished processing in %d [s]." % (end - start))

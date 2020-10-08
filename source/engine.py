@@ -57,14 +57,18 @@ class Engine:
             'ridge': regression.ridge_regression
         }
         reg = switcher.get(regression_method)
-        regressor, x_test_split, y_test_split = reg(x_train=x_train_norm, y_train=y_train_norm, x_test=x_test_norm, handin=argumenthelper.get_args().handin)
-        return regressor, x_test_split, y_test_split
+        regressor, x_test_split, y_test_split, x_train_split, y_train_split = reg(x_train=x_train_norm, y_train=y_train_norm, x_test=x_test_norm, handin=argumenthelper.get_args().handin)
+        return regressor, x_test_split, y_test_split, x_train_split, y_train_split
 
-    def predict(self, regressor, x_test_split, y_test_split, x_test_index):
+    def predict(self, regressor, x_test_split, y_test_split, x_test_index, x_train_split, y_train_split):
+        predicted_values = regressor.predict(x_train_split)
+        score = r2_score(y_true=y_train_split, y_pred=predicted_values)
+        Logcreator.info("R2 Score achieved on training set: {}".format(score))
+
         if y_test_split is not None:
             predicted_values = regressor.predict(x_test_split)
             score = r2_score(y_true=y_test_split, y_pred=predicted_values)
-            Logcreator.info("Score achieved on test-set: {}".format(score))
+            Logcreator.info("R2 Score achieved on test set: {}".format(score))
         else:
             predicted_values = regressor.predict(x_test_split)
             output_csv = pd.concat([pd.Series(x_test_index.values), pd.Series(predicted_values.flatten())], axis=1)

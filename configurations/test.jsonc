@@ -1,0 +1,20 @@
+{
+    "environment": {
+        "name" : "describe the run",
+        "output_path": "trainings",
+        "log_file" : "logs.txt"
+    },
+    "imputer": {
+        "name": "mean"
+    },
+    "outliers": {
+        "name": "lof"
+    },
+	"normalizer": {
+		"name": "stdscaler"
+	},
+	"regression": {
+		"name": "ridge",
+		"split": true
+	}
+}

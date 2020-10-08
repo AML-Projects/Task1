@@ -7,6 +7,7 @@ __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@stu
 
 from logcreator.logcreator import Logcreator
 from sklearn.neighbors import LocalOutlierFactor
+from sklearn.ensemble import IsolationForest
 
 class Outliers:
     def __init__(self):
@@ -16,6 +17,14 @@ class Outliers:
     def LOF(self, x_train, y_train, x_test):
         lof = LocalOutlierFactor(contamination='auto')
         outliers = lof.fit_predict(x_train)
+        mask = outliers != -1
+        x_train_outl, y_train_outl = x_train[mask, :], y_train[mask]
+        Logcreator.info("Nr. of outliers removed: {}".format(x_train.shape[0] - x_train_outl.shape[0]))
+        return x_train_outl, y_train_outl, x_test
+
+    def iForest(self, x_train, y_train, x_test):
+        ifo = IsolationForest(contamination='auto')
+        outliers = ifo.fit_predict(x_train)
         mask = outliers != -1
         x_train_outl, y_train_outl = x_train[mask, :], y_train[mask]
         Logcreator.info("Nr. of outliers removed: {}".format(x_train.shape[0] - x_train_outl.shape[0]))

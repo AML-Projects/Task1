@@ -4,21 +4,25 @@ __email__ = "ankaufmann@student.ethz.ch"
 import os
 import time
 import argparse
+import pandas as pd
+from shutil import copy
+import tempfile
 
 from source.configuration import Configuration
 from source.engine import Engine
 from logcreator.logcreator import Logcreator
-import pandas as pd
+
 
 if __name__ == "__main__":
     global config
-
+    #Sample Config: --handin true --configuration D:\GitHub\AML\Task1\configurations\test.jsonc
     parser = argparse.ArgumentParser(
         description="Executes a training session.")
     parser.add_argument('--configuration', default='',
                         type=str, help="Environment and training configuration.")
     parser.add_argument('--workingdir', default=os.getcwd(), type=str,
                         help="Working directory (default: current directory).")
+    parser.add_argument('--handin', default=False, type=bool, help="If set to true, whole trainingset used for training")
 
     args = parser.parse_args()
     start = time.time()
@@ -29,8 +33,6 @@ if __name__ == "__main__":
     Logcreator.h1("Task 01 - Regression")
     Logcreator.info("Environment: %s" % Configuration.get('environment.name'))
 
-
-    #Read in data
     # Load training data
     x_train = pd.read_csv("./data/X_train.csv")
     x_train.drop(['id'], axis=1, inplace=True)
@@ -52,10 +54,10 @@ if __name__ == "__main__":
     #Train
     regressor, x_test_split, y_test_split = engine.train(x_train=x_train, y_train=y_train, x_test=x_test)
     #Predict
-    if Configuration.get('regression.split'):
+    if not args.handin:
         engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=y_test_split, x_test_index=None)
     else:
-        engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=None, x_test_index=x_test.index)
+        csv = engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=None, x_test_index=x_test.index)
 
     end = time.time()
     Logcreator.info("Finished processing in %d [s]." % (end - start))

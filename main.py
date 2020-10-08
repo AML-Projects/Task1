@@ -37,18 +37,15 @@ if __name__ == "__main__":
     Logcreator.info("Environment: %s" % Configuration.get('environment.name'))
 
     # Load training data
-    x_train = pd.read_csv("./data/X_train.csv")
-    x_train.drop(['id'], axis=1, inplace=True)
+    x_train = pd.read_csv("./data/X_train.csv", index_col=0)
     Logcreator.info("Shape of training_samples: {}".format(x_train.shape))
     Logcreator.info(x_train.head())
 
-    y_train = pd.read_csv("./data/y_train.csv")
-    y_train.drop(['id'], axis=1, inplace=True)
+    y_train = pd.read_csv("./data/y_train.csv", index_col=0)
     Logcreator.info("Shape of training labels: {}".format(y_train.shape))
     Logcreator.info(y_train.head())
 
-    x_test = pd.read_csv("./data/X_test.csv")
-    x_test.drop(['id'], axis=1, inplace=True)
+    x_test = pd.read_csv("./data/X_test.csv", index_col=0)
     Logcreator.info("Shape of test samples: {}".format(x_test.shape))
     Logcreator.info(y_train.head())
 

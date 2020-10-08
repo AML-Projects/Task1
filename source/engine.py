@@ -26,6 +26,7 @@ class Engine:
         imputer_type = Configuration.get('imputer.name')
         switcher = {
             'mean': imputer.mean_simple_imputer,
+            'median': imputer.median_simple_imputer,
             'iterative': imputer.multivariate_imputer
         }
         imp = switcher.get(imputer_type)

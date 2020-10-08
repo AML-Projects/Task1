@@ -23,9 +23,20 @@ class Imputer:
         imp.fit(x_train)
         x_train_imputed = imp.transform(x_train)
         x_test_imputed = imp.transform(x_test)
-        Logcreator.info("Imputation reslut with mean imputation for x_train: \n")
+        Logcreator.info("Imputation result with mean imputation for x_train: \n")
         Logcreator.info(pd.DataFrame(x_train_imputed).head())
-        Logcreator.info("Imputation reslut with mean imputation for x_test: \n")
+        Logcreator.info("Imputation result with mean imputation for x_test: \n")
+        Logcreator.info(pd.DataFrame(x_test_imputed).head())
+        return x_train_imputed, y_train, x_test_imputed
+
+    def median_simple_imputer(self, x_train, y_train, x_test):
+        imp = SimpleImputer(missing_values=np.nan, strategy='median')
+        imp.fit(x_train)
+        x_train_imputed = imp.transform(x_train)
+        x_test_imputed = imp.transform(x_test)
+        Logcreator.info("Imputation result with median imputation for x_train: \n")
+        Logcreator.info(pd.DataFrame(x_train_imputed).head())
+        Logcreator.info("Imputation result with median imputation for x_test: \n")
         Logcreator.info(pd.DataFrame(x_test_imputed).head())
         return x_train_imputed, y_train, x_test_imputed
 

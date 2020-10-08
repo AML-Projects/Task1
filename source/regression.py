@@ -1,5 +1,11 @@
+"""
+Regression is performd in this class
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
+
 from logcreator.logcreator import Logcreator
-from sklearn.neighbors import LocalOutlierFactor
 from sklearn.linear_model import Ridge
 from sklearn import model_selection
 import math

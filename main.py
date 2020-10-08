@@ -1,3 +1,7 @@
+"""
+Main class
+"""
+
 __author__ = 'Andreas Kaufmann'
 __email__ = "ankaufmann@student.ethz.ch"
 
@@ -5,7 +9,6 @@ import os
 import time
 import argparse
 import pandas as pd
-from shutil import copy
 
 from source.configuration import Configuration
 from source.engine import Engine
@@ -24,7 +27,6 @@ if __name__ == "__main__":
                         help="Working directory (default: current directory).")
     parser.add_argument('--handin', default=False, type=bool, help="If set to true, whole trainingset used for training")
 
-    #args = parser.parse_args()
     args = argumenthelper.parse_args(parser)
     start = time.time()
 

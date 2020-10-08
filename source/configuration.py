@@ -1,11 +1,13 @@
+"""
+Initializes config, loads configfiles, adds folder for run-logs
+"""
 
+__author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
 
 import commentjson
-from collections import namedtuple
-import getpass
-import json
 import os
-import shutil
+
 import datetime
 from shutil import copy
 

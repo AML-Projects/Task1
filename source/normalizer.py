@@ -1,3 +1,10 @@
+"""
+Data normalizer
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
+
 from logcreator.logcreator import Logcreator
 from sklearn import preprocessing
 

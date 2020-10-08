@@ -3,12 +3,11 @@
 Helps handling files and folders.
 """
 
-__author__ = 'David Flury, Andreas Kaufmann, Raphael Müller'
-__email__ = "info@unmix.io"
+__author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
 
 
 import glob
-import numpy as np
 import os
 
 

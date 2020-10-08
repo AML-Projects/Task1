@@ -1,3 +1,10 @@
+"""
+Runs trainings and predictions
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
+
 from logcreator.logcreator import Logcreator
 from source.configuration import Configuration
 import pandas as pd
@@ -7,7 +14,6 @@ from source.outliers import Outliers
 from source.normalizer import Normalizer
 from source.regression import Regression
 from helpers import argumenthelper
-import os
 
 class Engine:
     def __init__(self):

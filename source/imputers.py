@@ -1,5 +1,12 @@
+"""
+Data imputer to set values for NaN values in datasets
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
+
+
 from logcreator.logcreator import Logcreator
-from source.configuration import Configuration
 import numpy as np
 from sklearn.impute import SimpleImputer
 import pandas as pd

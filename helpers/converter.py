@@ -5,16 +5,12 @@
 Converts and handles data and types.
 """
 
-__author__ = 'David Flury, Andreas Kaufmann, Raphael Müller'
-__email__ = "info@unmix.io"
+__author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
 
 
 import datetime
-import os
 import time
-import numpy as np
-
-
 
 
 def try_eval(expression):
@@ -45,13 +41,6 @@ def get_timestamp():
 
 def elapsed_since(start, format="%H:%M:%S"):
     return time.strftime(format, time.gmtime(time.time() - start))
-
-
-# def env(key):
-#     try:
-#         return os.environ[key]
-#     except Exception:
-#         raise ConfigurationError(key)
 
 
 def to_complex(realimag):

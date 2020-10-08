@@ -203,3 +203,4 @@ fabric.properties
 
 # Trainings folder
 trainings/
+.idea/

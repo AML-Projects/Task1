@@ -10,8 +10,14 @@
     "outliers": {
         "name": "lof"
     },
+    "feature_selector": {
+        "remove_constant_features" : "True",
+        "remove_correlated_features" : "True",
+        "selectBestK" : "True",
+        "selectBestBasedOnImpurity" : "True",
+    },
 	"normalizer": {
-		"name": "stdscaler"
+		"name": "robustscaler"
 	},
 	"regression": {
 		"name": "ridge"

@@ -5,14 +5,12 @@ Data normalizer
 __author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
 __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
 
+import pandas as pd
 from sklearn.base import TransformerMixin
 from sklearn.ensemble import ExtraTreesClassifier
-from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_info_regression, f_regression, \
-    SelectFromModel
+from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_info_regression, SelectFromModel
 
 from logcreator.logcreator import Logcreator
-from sklearn import preprocessing
-import pandas as pd
 
 
 class TreeBasedFeatureSelector(TransformerMixin):
@@ -28,7 +26,10 @@ class TreeBasedFeatureSelector(TransformerMixin):
                                         random_state=41)
 
     def fit(self, X, y):
-        self.clf = self.clf.fit(X, y)
+        """
+        Expecting y to be a pandas DataFrame.
+        """
+        self.clf = self.clf.fit(X, y.values.ravel())
         return self
 
     def transform(self, X):
@@ -42,8 +43,10 @@ class FeatureSelector:
     Partly based on # https://stackabuse.com/applying-filter-methods-in-python-for-feature-selection/
     """
 
-    def __init__(self):
+    def __init__(self, k=200, corr_threshold=0.8):
         Logcreator.info("Feature Selection")
+        self.k = k
+        self.correlation_threshold = corr_threshold
 
     def remove_constant_features(self, x_train, y_train, x_test):
         """
@@ -56,7 +59,7 @@ class FeatureSelector:
 
         Logcreator.info("Variance Threshold ", constant_filter.get_params()['threshold'],
                         " -> nr of features: ",
-                        x_train.shape[1])
+                        x_train_feature.shape[1])
 
         return x_train_feature, y_train, x_test_feature
 
@@ -71,33 +74,36 @@ class FeatureSelector:
         correlated_features = set()
         correlation_matrix = pd.DataFrame(x_train).corr()
 
-        correlation_value_threshold = 0.8
+        self.correlation_threshold = 0.8
 
+        # TODO maybe don't remove all correlated features, but kee one of them
         for i in range(len(correlation_matrix.columns)):
             for j in range(i):
-                if abs(correlation_matrix.iloc[i, j]) > correlation_value_threshold:
+                if abs(correlation_matrix.iloc[i, j]) > self.correlation_threshold:
                     column_name = correlation_matrix.columns[i]
                     correlated_features.add(column_name)
 
         x_train.drop(labels=correlated_features, axis=1, inplace=True)
-        y_train.drop(labels=correlated_features, axis=1, inplace=True)
         x_test.drop(labels=correlated_features, axis=1, inplace=True)
 
-        Logcreator.info("Correlation Threshold ", correlation_value_threshold,
+        Logcreator.info("Correlation Threshold ", self.correlation_threshold,
                         " -> nr of features: ",
                         x_train.shape[1])
 
         return x_train, y_train, x_test
 
     def selectBestK(self, x_train, y_train, x_test):
-        k = 200
-        # score_func: f_regression, mutual_info_regression, ...
-        k_best = SelectKBest(score_func=mutual_info_regression, k=k)
+        """
+        Expecting y to be a pandas Dataframe.
+        """
 
-        x_train_best = k_best.fit_transform(x_train, y_train)
+        # score_func: f_regression, mutual_info_regression, ...
+        k_best = SelectKBest(score_func=mutual_info_regression, k=self.k)
+
+        x_train_best = k_best.fit_transform(x_train, y_train.values.ravel())
         x_test_best = k_best.transform(x_test)
 
-        Logcreator.info("SelectKBest k =", k, " -> nr features: ", str(x_train.shape[1]))
+        Logcreator.info("SelectKBest k =", self.k, " -> nr features: ", str(x_train_best.shape[1]))
 
         return x_train_best, y_train, x_test_best
 
@@ -107,6 +113,6 @@ class FeatureSelector:
         x_train_best = selector.fit_transform(x_train, y_train)
         x_test_best = selector.transform(x_test)
 
-        Logcreator.info("TreeBasedFeatureSelector", " -> nr features: ", str(x_train.shape[1]))
+        Logcreator.info("TreeBasedFeatureSelector", " -> nr features: ", str(x_train_best.shape[1]))
 
         return x_train_best, y_train, x_test_best

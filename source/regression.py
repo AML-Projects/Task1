@@ -15,26 +15,38 @@ from logcreator.logcreator import Logcreator
 
 
 class Regression:
-    def __init__(self):
+    def __init__(self, stratified_split=True):
+        self.stratified_split = stratified_split
         Logcreator.info("Start fit model")
 
     def ridge_regression(self, x_train, y_train, x_test, handin):
         if not handin:
-            # TODO check if stratified split works, than set to True
-            stratified_split = False
-            if stratified_split:
+            if self.stratified_split:
+                Logcreator.info("Stratified split")
                 # convert to dataframe if they are not already
                 x_train = pd.DataFrame(x_train)
                 y_train = pd.DataFrame(y_train)
                 x_test = pd.DataFrame(x_test)
 
-                # Remove samples for which we have only one age class,
-                # so that we can do a stratified split
+                # check if the indexes of x_train and y_train match
+                if ((x_train.index == y_train.index).all() == False):
+                    Logcreator.warn("Indexes do not match, probably because of outlier removal!")
+                    # drop indices because they are different
+                    x_train.reset_index(drop=True, inplace=True)
+                    y_train.reset_index(drop=True, inplace=True)
+
+                """
+                 Remove samples for which we have only one age class, 
+                 so that we can do a stratified split
+                """
                 y_train_int = y_train.astype(int)
                 counts = y_train_int["y"].value_counts()
-                Logcreator.info("The number of samples for each 'age/class' are \n ", pd.DataFrame(counts).T)
+                Logcreator.info("The number of samples for each 'age/class' are:\n",
+                                pd.DataFrame(counts).T.reset_index())
+
                 classes_with_one_el = counts[counts == 1].index.values
-                Logcreator.info("'Age' with only one sample \n ", classes_with_one_el)
+                Logcreator.info("'Age' with only one sample:\n", classes_with_one_el)
+
                 remove_columns = y_train_int["y"].isin(classes_with_one_el)
 
                 # Save samples/rows we remove

@@ -42,10 +42,10 @@ class Regression:
                 y_train_int = y_train.astype(int)
                 counts = y_train_int["y"].value_counts()
                 Logcreator.info("The number of samples for each 'age/class' are:\n",
-                                pd.DataFrame(counts).T.reset_index())
+                                pd.DataFrame(counts).T)
 
                 classes_with_one_el = counts[counts == 1].index.values
-                Logcreator.info("'Age' with only one sample:\n", classes_with_one_el)
+                Logcreator.info("'Age' with only one sample:", classes_with_one_el)
 
                 remove_columns = y_train_int["y"].isin(classes_with_one_el)
 
@@ -89,17 +89,41 @@ class Regression:
 
         # Run Gridsearch for alpha
         parameters = {
-            'alpha': [1e-15, 1e-10, 1e-8, 1e-4, 1e-3, 1e-2, 1, 5, 10, 20, 50, 100, 200, 300, 500, 1000, 1500, 1600,
-                      1700, 1799, 1800, 1801, 1805, 1810, 1820, 1850]}
+            'alpha': [0.01, 0.1, 1, 10, 100],
+            # 'alpha': [1e-15, 1e-10, 1e-8, 1e-4, 1e-3, 1e-2, 1, 5, 10, 20, 50, 100, 200, 300, 500, 1000, 1500, 1600, 1700, 1799, 1800, 1801, 1805, 1810, 1820, 1850],
+            'normalize': [True, False],
+            "solver": ['svd', 'saga']
+            # "solver": ['svd', 'cholesky', 'lsqr', 'sparse_cg', 'sag', 'saga']
+        }
         nr_folds = math.floor(math.sqrt(x_train_split.shape[0]))
-        model = Ridge()
-        ridge_regressor = model_selection.GridSearchCV(model, parameters, scoring='neg_mean_squared_error', cv=nr_folds)
+        model = Ridge(random_state=41)
+        ridge_regressor = model_selection.GridSearchCV(model, parameters,
+                                                       # scoring='neg_mean_squared_error',
+                                                       scoring='r2',
+                                                       # use every cpu thread
+                                                       n_jobs=-1,
+                                                       cv=nr_folds,
+                                                       # Return train score to check for overfitting
+                                                       return_train_score=True,
+                                                       verbose=1)
         ridge_regressor.fit(x_train_split, y_train_split)
 
         # Best estimator
         Logcreator.info("Best estimator from GridSearch: {}".format(ridge_regressor.best_estimator_))
         Logcreator.info("Best alpha found: {}".format(ridge_regressor.best_params_))
         Logcreator.info("Best training-score with mse loss: {}".format(ridge_regressor.best_score_))
+
+        # make pandas print everything
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+        pd.set_option('display.max_colwidth', None)
+
+        results = pd.DataFrame(ridge_regressor.cv_results_)
+        results.sort_values(by='rank_test_score', inplace=True)
+
+        Logcreator.info(
+            results[['params', 'mean_test_score', 'std_test_score', 'mean_train_score', 'std_train_score']].head(30))
 
         ridge = ridge_regressor.best_estimator_
 

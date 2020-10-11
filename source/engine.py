@@ -40,7 +40,8 @@ class Engine:
         outliers_method = Configuration.get('outliers.name')
         switcher = {
             'lof': outliers.LOF,
-            'iforest': outliers.iForest
+            'iforest': outliers.iForest,
+            'customOR': outliers.customOR
         }
         outl = switcher.get(outliers_method)
         x_train_outl, y_train_outl, x_test_outl = outl(x_train=x_train_imp, y_train=y_train_imp, x_test=x_test_imp)

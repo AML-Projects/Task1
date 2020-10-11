@@ -20,6 +20,60 @@ class Regression:
         Logcreator.info("Start fit model")
 
     def ridge_regression(self, x_train, y_train, x_test, handin):
+        x_test_split, x_train_split, y_test_split, y_train_split = self.get_data_split(handin, x_test, x_train, y_train)
+
+        # grid search parameters
+        parameters = {
+            'alpha': [0.01, 0.1, 1, 10, 100],
+            # 'alpha': [1e-15, 1e-10, 1e-8, 1e-4, 1e-3, 1e-2, 1, 5, 10, 20, 50, 100, 200, 300, 500, 1000, 1500, 1600, 1700, 1799, 1800, 1801, 1805, 1810, 1820, 1850],
+            'normalize': [True, False],
+            'solver': ['svd', 'saga']
+            # 'solver': ['svd', 'cholesky', 'lsqr', 'sparse_cg', 'sag', 'saga']
+        }
+
+        nr_folds = math.floor(math.sqrt(x_train_split.shape[0]))
+
+        model = Ridge(random_state=41)
+
+        ridge = self.do_grid_search(model, nr_folds, parameters, x_train_split, y_train_split)
+
+        # Use ridge regression
+        ridge.fit(x_train_split, y_train_split)
+        return ridge, x_test_split, y_test_split, x_train_split, y_train_split
+
+    def do_grid_search(self, model, nr_folds, parameters, x_train_split, y_train_split):
+        grid_search = model_selection.GridSearchCV(model, parameters,
+                                                   # scoring='neg_mean_squared_error',
+                                                   scoring='r2',
+                                                   # use every cpu thread
+                                                   n_jobs=-1,
+                                                   cv=nr_folds,
+                                                   # Return train score to check for overfitting
+                                                   return_train_score=True,
+                                                   verbose=1)
+        grid_search.fit(x_train_split, y_train_split)
+
+        # Best estimator
+        Logcreator.info("Best estimator from GridSearch: {}".format(grid_search.best_estimator_))
+        Logcreator.info("Best alpha found: {}".format(grid_search.best_params_))
+        Logcreator.info("Best training-score with mse loss: {}".format(grid_search.best_score_))
+
+        # make pandas print everything
+        pd.set_option('display.max_rows', None)
+        pd.set_option('display.max_columns', None)
+        pd.set_option('display.width', None)
+        pd.set_option('display.max_colwidth', None)
+        results = pd.DataFrame(grid_search.cv_results_)
+        results.sort_values(by='rank_test_score', inplace=True)
+
+        Logcreator.info(
+            results[['params', 'mean_test_score', 'std_test_score', 'mean_train_score', 'std_train_score']].head(30))
+
+        ridge = grid_search.best_estimator_
+
+        return ridge
+
+    def get_data_split(self, handin, x_test, x_train, y_train):
         if not handin:
             if self.stratified_split:
                 Logcreator.info("Stratified split")
@@ -87,46 +141,4 @@ class Regression:
         Logcreator.info("x_train_split: {}".format(x_train_split.shape))
         Logcreator.info("x_test_split: {}".format(x_test_split.shape))
 
-        # Run Gridsearch for alpha
-        parameters = {
-            'alpha': [0.01, 0.1, 1, 10, 100],
-            # 'alpha': [1e-15, 1e-10, 1e-8, 1e-4, 1e-3, 1e-2, 1, 5, 10, 20, 50, 100, 200, 300, 500, 1000, 1500, 1600, 1700, 1799, 1800, 1801, 1805, 1810, 1820, 1850],
-            'normalize': [True, False],
-            "solver": ['svd', 'saga']
-            # "solver": ['svd', 'cholesky', 'lsqr', 'sparse_cg', 'sag', 'saga']
-        }
-        nr_folds = math.floor(math.sqrt(x_train_split.shape[0]))
-        model = Ridge(random_state=41)
-        ridge_regressor = model_selection.GridSearchCV(model, parameters,
-                                                       # scoring='neg_mean_squared_error',
-                                                       scoring='r2',
-                                                       # use every cpu thread
-                                                       n_jobs=-1,
-                                                       cv=nr_folds,
-                                                       # Return train score to check for overfitting
-                                                       return_train_score=True,
-                                                       verbose=1)
-        ridge_regressor.fit(x_train_split, y_train_split)
-
-        # Best estimator
-        Logcreator.info("Best estimator from GridSearch: {}".format(ridge_regressor.best_estimator_))
-        Logcreator.info("Best alpha found: {}".format(ridge_regressor.best_params_))
-        Logcreator.info("Best training-score with mse loss: {}".format(ridge_regressor.best_score_))
-
-        # make pandas print everything
-        pd.set_option('display.max_rows', None)
-        pd.set_option('display.max_columns', None)
-        pd.set_option('display.width', None)
-        pd.set_option('display.max_colwidth', None)
-
-        results = pd.DataFrame(ridge_regressor.cv_results_)
-        results.sort_values(by='rank_test_score', inplace=True)
-
-        Logcreator.info(
-            results[['params', 'mean_test_score', 'std_test_score', 'mean_train_score', 'std_train_score']].head(30))
-
-        ridge = ridge_regressor.best_estimator_
-
-        # Use ridge regression
-        ridge.fit(x_train_split, y_train_split)
-        return ridge, x_test_split, y_test_split, x_train_split, y_train_split
+        return x_test_split, x_train_split, y_test_split, y_train_split

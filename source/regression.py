@@ -10,6 +10,7 @@ import math
 import pandas as pd
 from sklearn import model_selection
 from sklearn.linear_model import Ridge
+from sklearn.svm import SVR
 
 from logcreator.logcreator import Logcreator
 
@@ -40,6 +41,27 @@ class Regression:
         # Use ridge regression
         ridge.fit(x_train_split, y_train_split)
         return ridge, x_test_split, y_test_split, x_train_split, y_train_split
+
+    def svr_regression(self, x_train, y_train, x_test, handin):
+        x_test_split, x_train_split, y_test_split, y_train_split = self.get_data_split(handin, x_test, x_train, y_train)
+
+        nr_folds = math.floor(math.sqrt(x_train_split.shape[0]))
+
+        model = SVR()
+
+        # grid search parameters
+        parameters = {
+            "C": [40, 20, 10, 1],
+            # "gamma": ['scale', 'auto'],
+            # "coef0": [0.0, 0.5, 1.0],
+            # "kernel": ['rbf', 'poly'],
+            "degree": [1],  # of poly kernel
+        }
+
+        best_model = self.do_grid_search(model, nr_folds, parameters, x_train_split, y_train_split)
+
+        best_model.fit(x_train_split, y_train_split)
+        return best_model, x_test_split, y_test_split, x_train_split, y_train_split
 
     def do_grid_search(self, model, nr_folds, parameters, x_train_split, y_train_split):
         grid_search = model_selection.GridSearchCV(model, parameters,
@@ -140,5 +162,7 @@ class Regression:
 
         Logcreator.info("x_train_split: {}".format(x_train_split.shape))
         Logcreator.info("x_test_split: {}".format(x_test_split.shape))
+
+        y_train_split = y_train_split.values.ravel()
 
         return x_test_split, x_train_split, y_test_split, y_train_split

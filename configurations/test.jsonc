@@ -14,12 +14,12 @@
         "remove_constant_features" : "True",
         "remove_correlated_features" : "True",
         "selectBestK" : "True",
-        "selectBestBasedOnImpurity" : "True",
+        "selectBestBasedOnImpurity" : "False",
     },
 	"normalizer": {
 		"name": "robustscaler"
 	},
 	"regression": {
-		"name": "ridge"
+		"name": "svr"
 	}
 }

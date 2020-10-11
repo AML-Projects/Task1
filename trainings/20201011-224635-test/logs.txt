@@ -1,0 +1,70 @@
+20201011-224635	Task 01 - Regression
+20201011-224635	Info: Environment: describe the run
+20201011-224635	Info: Shape of training_samples: (1212, 832)
+20201011-224635	Info:             x0             x1  ...           x830           x831
+id                             ...                              
+0.0  10.891876  832442.812375  ...   85338.558539  103088.664210
+1.0  11.512994  832442.898114  ...   95695.020645  105161.109422
+2.0  11.052185  832442.896307  ...   80253.299882  104177.051666
+3.0  11.642076            NaN  ...            NaN  102746.516920
+4.0  10.407121  832442.831424  ...  101815.745499  105163.749149
+
+[5 rows x 832 columns]
+20201011-224635	Info: Shape of training labels: (1212, 1)
+20201011-224635	Info:         y
+id       
+0.0  71.0
+1.0  73.0
+2.0  66.0
+3.0  55.0
+4.0  67.0
+20201011-224635	Info: Shape of test samples: (776, 832)
+20201011-224635	Info:         y
+id       
+0.0  71.0
+1.0  73.0
+2.0  66.0
+3.0  55.0
+4.0  67.0
+20201011-224635	Info: Training initialized
+20201011-224635	Info: Imputer initialized
+20201011-224635	Info: Imputation result with mean imputation for x_train: 
+
+20201011-224635	Info:          0              1    ...            830            831
+0  10.891876  832442.812375  ...   85338.558539  103088.664210
+1  11.512994  832442.898114  ...   95695.020645  105161.109422
+2  11.052185  832442.896307  ...   80253.299882  104177.051666
+3  11.642076  832442.859290  ...   99798.480171  102746.516920
+4  10.407121  832442.831424  ...  101815.745499  105163.749149
+
+[5 rows x 832 columns]
+20201011-224635	Info: Imputation result with mean imputation for x_test: 
+
+20201011-224635	Info:          0              1    ...            830            831
+0   9.101943  832442.839400  ...   99798.480171  106668.615874
+1  11.722077  832442.826314  ...  100761.264268  104903.905758
+2  11.200277  832442.820359  ...  106440.456728  103405.273232
+3   9.668873  832442.820901  ...   99798.480171  100531.960204
+4  10.329962  832442.871842  ...  109797.625066  104849.648797
+
+[5 rows x 832 columns]
+20201011-224635	Info: Start outlier detection
+20201011-224636	Info: Nr. of outliers removed: 53
+20201011-224636	Info: Feature Selection
+20201011-224636	Info: Variance Threshold  0  -> nr of features:  828
+20201011-224643	Info: Correlation Threshold  0.8  -> nr of features:  765
+20201011-224652	Info: SelectKBest k = 200  -> nr features:  200
+20201011-224652	Info: Start normalizer
+20201011-224652	Info: Start fit model
+20201011-224652	Info: x_train_split: (1159, 832)
+20201011-224652	Info: x_test_split: (776, 832)
+20201011-224750	Info: Best estimator from GridSearch: SVR(C=40, degree=1)
+20201011-224750	Info: Best alpha found: {'C': 40, 'degree': 1}
+20201011-224750	Info: Best training-score with mse loss: 0.5113257206068754
+20201011-224750	Info:                    params  mean_test_score  std_test_score  mean_train_score  std_train_score
+0  {'C': 40, 'degree': 1}         0.511326        0.122178          0.994267         0.000460
+1  {'C': 20, 'degree': 1}         0.510637        0.124987          0.975475         0.001598
+2  {'C': 10, 'degree': 1}         0.496546        0.130844          0.908003         0.002485
+3   {'C': 1, 'degree': 1}         0.336751        0.101997          0.456250         0.003355
+20201011-224752	Info: R2 Score achieved on training set: 0.9941856686784978
+20201011-224752	Info: Finished processing in 77 [s].

@@ -1,0 +1,25 @@
+{
+    "environment": {
+        "name" : "describe the run",
+        "output_path": "trainings",
+        "log_file" : "logs.txt"
+    },
+    "imputer": {
+        "name": "mean"
+    },
+    "outliers": {
+        "name": "lof"
+    },
+    "feature_selector": {
+        "remove_constant_features" : "True",
+        "remove_correlated_features" : "True",
+        "selectBestK" : "True",
+        "selectBestBasedOnImpurity" : "False",
+    },
+	"normalizer": {
+		"name": "robustscaler"
+	},
+	"regression": {
+		"name": "svr"
+	}
+}

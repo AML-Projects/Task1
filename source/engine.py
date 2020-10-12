@@ -88,7 +88,8 @@ class Engine:
         regression_method = Configuration.get('regression.name')
         switcher = {
             'ridge': regression.ridge_regression,
-            'svr': regression.svr_regression
+            'svr': regression.svr_regression,
+            'xgb': regression.xgboost_regression
         }
         reg = switcher.get(regression_method)
         regressor, x_test_split, y_test_split, x_train_split, y_train_split = reg(x_train=x_train_norm,

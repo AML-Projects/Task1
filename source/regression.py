@@ -8,6 +8,7 @@ __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@stu
 import math
 
 import pandas as pd
+import xgboost as xgb
 from sklearn import model_selection
 from sklearn.linear_model import Ridge
 from sklearn.svm import SVR
@@ -59,6 +60,32 @@ class Regression:
         }
 
         best_model = self.do_grid_search(model, nr_folds, parameters, x_train_split, y_train_split)
+
+        best_model.fit(x_train_split, y_train_split)
+        return best_model, x_test_split, y_test_split, x_train_split, y_train_split
+
+    def xgboost_regression(self, x_train, y_train, x_test, handin):
+        x_test_split, x_train_split, y_test_split, y_train_split = self.get_data_split(handin, x_test, x_train, y_train)
+
+        nr_folds = math.floor(math.sqrt(x_train_split.shape[0]) / 2)
+
+        y_train_split = y_train_split.astype(int)
+        param = {}
+        param['booster'] = ['gbtree']
+        # setting max_depth to high results in overfitting
+        param['max_depth'] = [3]
+        param['min_child_weight'] = [1, 2]
+        # subsampling of rows: lower values of subsample can prevent overfitting
+        param['subsample'] = [i / 10. for i in range(8, 11)]
+        # subsampling of columns:
+        param['colsample_bytree'] = [i / 10. for i in range(8, 11)]
+        # learning rate eta
+        param['eta'] = [.1, 0.08]  #
+        # param['objective'] = ['reg:squarederror']
+
+        model = xgb.XGBRegressor(random_state=41)
+
+        best_model = self.do_grid_search(model, nr_folds, param, x_train_split, y_train_split)
 
         best_model.fit(x_train_split, y_train_split)
         return best_model, x_test_split, y_test_split, x_train_split, y_train_split

@@ -1,5 +1,5 @@
 """
-Data normalizer
+Feature selection
 """
 
 __author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'

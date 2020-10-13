@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     x_test = pd.read_csv("./data/X_test.csv", index_col=0)
     Logcreator.info("Shape of test samples: {}".format(x_test.shape))
-    Logcreator.info(y_train.head())
+    Logcreator.info(x_test.head())
 
     engine = Engine()
 

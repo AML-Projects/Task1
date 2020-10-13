@@ -10,6 +10,7 @@ from sklearn.neighbors import LocalOutlierFactor
 from sklearn.ensemble import IsolationForest
 import pandas as pd
 import numpy as np
+from source.configuration import Configuration
 
 
 class CustomOutlierRemover:
@@ -112,7 +113,7 @@ class Outliers:
 
     def customOR(self, x_train, y_train, x_test):
         # strategy: z_score or iqr
-        cor = CustomOutlierRemover(strategy='iqr', threshold=10, verbose=1)
+        cor = CustomOutlierRemover(strategy=Configuration.get('outliers.customOR.method'), threshold=Configuration.get('outliers.customOR.threshold'), verbose=1)
         cor.fit(x_train)
         x_train_outl, y_train_outl = cor.remove(x_train, y_train)
 

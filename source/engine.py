@@ -81,7 +81,7 @@ class Engine:
             'robustscaler': normalizer.robust_scaler
         }
         norm = switcher.get(normalizer_method)
-        x_train_norm, y_train_norm, x_test_norm = norm(x_train=x_train_outl, y_train=y_train_outl, x_test=x_test_outl)
+        x_train_norm, y_train_norm, x_test_norm = norm(x_train=x_train_fs, y_train=y_train_fs, x_test=x_test_fs)
 
         # Regression
         regression = Regression()

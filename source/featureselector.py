@@ -9,7 +9,7 @@ import pandas as pd
 from sklearn.base import TransformerMixin
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_info_regression, SelectFromModel
-from source.configuration import Configuration
+
 from logcreator.logcreator import Logcreator
 
 
@@ -43,10 +43,23 @@ class FeatureSelector:
     Partly based on # https://stackabuse.com/applying-filter-methods-in-python-for-feature-selection/
     """
 
-    def __init__(self, k=200, corr_threshold=0.8):
+    def __init__(self, k=200, remove_constant_features_par=True, constant_features_threshold=0.01, corr_threshold=0.8):
         Logcreator.info("Feature Selection")
         self.k = k
+        self.remove_constant_features_par = remove_constant_features_par
+        self.constant_features_threshold = constant_features_threshold
         self.correlation_threshold = corr_threshold
+
+    def transform_custom(self, x_train, y_train, x_test):
+        if self.remove_constant_features_par:
+            x_train, y_train, x_test = self.remove_constant_features(x_train,
+                                                                     y_train,
+                                                                     x_test,
+                                                                     self.constant_features_threshold)
+
+        # TODO copy other options from engine
+
+        return x_train, y_train, x_test
 
     def remove_features_with_many_Nan(self, x_train, y_train, x_test):
         """
@@ -64,7 +77,7 @@ class FeatureSelector:
         x_test.drop(labels=featuresToRemove, axis=1, inplace=True)
         return x_train, y_train, x_test
 
-    def remove_constant_features(self, x_train, y_train, x_test, threshold=0):
+    def remove_constant_features(self, x_train, y_train, x_test, threshold=0.0):
         """
         Remove features with zero or almost zero variance depending on the threshold.
         """
@@ -105,7 +118,7 @@ class FeatureSelector:
 
         train_features_T = x_train.T
         duplicateFeatures = train_features_T.duplicated()
-        print(duplicateFeatures.sum()) #Is always 0 for our dataset, therefore we don't do duplicate removing
+        print(duplicateFeatures.sum())  # Is always 0 for our dataset, therefore we don't do duplicate removing
 
     def remove_correlated_features(self, x_train, y_train, x_test):
         """

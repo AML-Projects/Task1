@@ -17,9 +17,15 @@ from logcreator.logcreator import Logcreator
 
 
 class Regression:
-    def __init__(self, stratified_split=True):
-        self.stratified_split = stratified_split
+    def __init__(self, name="xgb", stratified_split=True):
         Logcreator.info("Start fit model")
+        self.name = name
+        self.stratified_split = stratified_split
+
+    def fit_predict(self, x_train, y_train, x_test):
+        # TODO choose regressor function
+
+        return self.ridge_regression(x_train, y_train, x_test, False)
 
     def ridge_regression(self, x_train, y_train, x_test, handin):
         x_test_split, x_train_split, y_test_split, y_train_split = self.get_data_split(handin, x_test, x_train, y_train)
@@ -33,7 +39,8 @@ class Regression:
             # 'solver': ['svd', 'cholesky', 'lsqr', 'sparse_cg', 'sag', 'saga']
         }
 
-        nr_folds = math.floor(math.sqrt(x_train_split.shape[0]))
+        # TODO maybe increase nr_folds again?
+        nr_folds = math.floor(math.sqrt(x_train_split.shape[0]) / 3)
 
         model = Ridge(random_state=41)
 

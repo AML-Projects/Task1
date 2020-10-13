@@ -12,9 +12,20 @@ from logcreator.logcreator import Logcreator
 
 
 class Normalizer:
-    def __init__(self, fit_on='train'):
+    def __init__(self, name, fit_on='train'):
+        self.name = name
         self.fit_on = fit_on
         Logcreator.info("Start normalizer")
+
+    def transform_custom(self, x_train, y_train, x_test):
+        switcher = {
+            'stdscaler': self.standard_scaler,
+            'minmaxscaler': self.minmax_scaler,
+            'robustscaler': self.robust_scaler
+        }
+        norm = switcher.get(self.name)
+
+        return norm(x_train=x_train, y_train=y_train, x_test=x_test)
 
     def to_DataFrame(self, x_train, y_train, x_test):
         x_train = pd.DataFrame(x_train)

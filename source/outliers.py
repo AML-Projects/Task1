@@ -92,11 +92,22 @@ class CustomOutlierRemover:
 
 
 class Outliers:
-    def __init__(self, strategy='z_score', threshold=0.0, fit_on='train'):
+    def __init__(self, name='lof', strategy='z_score', threshold=0.0, fit_on='train'):
+        self.name = name
         self.strategy = strategy
         self.threshold = threshold
         self.fit_on = fit_on
         Logcreator.info("Start outlier detection")
+
+    def transform_custom(self, x_train, y_train, x_test):
+        switcher = {
+            'lof': self.LOF,
+            'iforest': self.iForest,
+            'customOR': self.customOR
+        }
+        outl = switcher.get(self.name)
+
+        return outl(x_train=x_train, y_train=y_train, x_test=x_test)
 
     def to_DataFrame(self, x_train, y_train, x_test):
         x_train = pd.DataFrame(x_train)

@@ -5,17 +5,35 @@ Data imputer to set values for NaN values in datasets
 __author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
 __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
 
-from logcreator.logcreator import Logcreator
 import numpy as np
-from sklearn.impute import SimpleImputer, KNNImputer
 import pandas as pd
-from sklearn.experimental import enable_iterative_imputer
+from sklearn.base import TransformerMixin, BaseEstimator
 from sklearn.impute import IterativeImputer
+from sklearn.impute import SimpleImputer, KNNImputer
+
+from logcreator.logcreator import Logcreator
 
 
-class Imputer:
-    def __init__(self):
+class Imputer(BaseEstimator, TransformerMixin):
+    def __init__(self, name='mean'):
+        self.name = name
         Logcreator.info("Imputer initialized")
+
+    # TODO if we want to use sklearn grid_search and pipeline we would need to implement fit and transform
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X, y=None):
+        return X
+
+    def transform_custom(self, x_train, y_train, x_test):
+        switcher = {
+            'mean': self.mean_simple_imputer,
+            'median': self.median_simple_imputer,
+            'iterative': self.multivariate_imputer
+        }
+        imp = switcher.get(self.name)
+        return imp(x_train=x_train, y_train=y_train, x_test=x_test)
 
     def mean_simple_imputer(self, x_train, y_train, x_test):
         imp = SimpleImputer(missing_values=np.nan, strategy='mean')

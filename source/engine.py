@@ -5,6 +5,8 @@ Runs trainings and predictions
 __author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
 __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
 
+import itertools
+
 import pandas as pd
 from sklearn.metrics import r2_score
 
@@ -22,15 +24,95 @@ class Engine:
     def __init__(self):
         Logcreator.info("Training initialized")
 
+    def search(self, x_train, y_train, x_test):
+
+        imputer_par_list = self.get_serach_list('search.imputer')
+        outlier_par_list = self.get_serach_list('search.outlier')
+        feature_selector_par_list = self.get_serach_list('search.feature_selector')
+        normalizer_par_list = self.get_serach_list('search.normalizer')
+        regression_par_list = self.get_serach_list('search.regression')
+
+        # TODO clean up for loops
+        for imp_data in imputer_par_list:
+
+            imputer = Imputer(**imp_data)
+            x_train, y_train, x_test = imputer.transform_custom(x_train=x_train, y_train=y_train, x_test=x_test)
+
+            for out_data in outlier_par_list:
+
+                outlier = Outliers(**out_data)
+                x_train, y_train, x_test = outlier.transform_custom(x_train=x_train, y_train=y_train, x_test=x_test)
+
+                for feature_selector_data in feature_selector_par_list:
+
+                    feature_selector = FeatureSelector(**feature_selector_data)
+
+                    x_train, y_train, x_test = feature_selector.transform_custom(x_train=x_train, y_train=y_train,
+                                                                                 x_test=x_test)
+
+                    for normalizer_data in normalizer_par_list:
+
+                        normalizer = Normalizer(**normalizer_data)
+
+                        x_train, y_train, x_test = normalizer.transform_custom(x_train=x_train, y_train=y_train,
+                                                                               x_test=x_test)
+
+                        for regression_data in regression_par_list:
+                            # TODO clean up output of current parameters
+                            Logcreator.h1("imputer", imp_data)
+                            Logcreator.h1("outlier", out_data)
+                            Logcreator.h1("feature_selector", feature_selector_data)
+                            Logcreator.h1("normalizer", normalizer_data)
+                            Logcreator.h1("regression", regression_data)
+
+                            regressor = Regression(**regression_data)
+                            regressor.fit_predict(x_train=x_train, y_train=y_train,
+                                                  x_test=x_test)
+
+    def get_serach_list(self, config_name):
+        param_dict = self.get_serach_params(config_name)
+        keys, values = zip(*param_dict.items())
+
+        search_list = list()
+        # probably there is an easier way to do this
+        for instance in itertools.product(*values):
+            d = dict(zip(keys, instance))
+            search_list.append(d)
+
+        return search_list
+
+    def get_serach_params(self, config_name):
+        """
+        Not so nice to parse the data from the file to a dictionary...
+        Parameters have to have the exact name of the actual class parameter!
+        Parameters have to be alphabetically ordered in the config file!
+        Parameters can't be named count and index!
+        """
+
+        config = Configuration.get(config_name)
+        attribute_names = [a for a in dir(config) if not a.startswith('_')]
+        # count and index is somehow also an attribute of the config object
+        attribute_names.remove('count')
+        attribute_names.remove('index')
+
+        param_dict = dict()
+        for name, element in zip(attribute_names, config):
+            param_dict[name] = element
+
+        return param_dict
+
     def train(self, x_train, y_train, x_test):
+        if True:  # TODO move to somewhere else
+            self.search(x_train, y_train, x_test)
+            return
 
         # Feature Selection (Remove features with to many nan
         feature_selector = FeatureSelector()
         fs_remove_nan = Configuration.get('feature_selector.remove_features_with_many_Nan')
         if (fs_remove_nan):
             x_train, y_train, x_test = feature_selector.remove_features_with_many_Nan(x_train,
-                                                                                   y_train,
-                                                                                   x_test)
+                                                                                      y_train,
+                                                                                      x_test)
 
         # Imputer
         imputer = Imputer()
@@ -58,7 +140,8 @@ class Engine:
 
         # Feature selection
         feature_selector = FeatureSelector(k=Configuration.get('feature_selector.selectBestK_par.k'),
-                                           corr_threshold=Configuration.get('feature_selector.remove_correlated_features_par.threshold'))
+                                           corr_threshold=Configuration.get(
+                                               'feature_selector.remove_correlated_features_par.threshold'))
 
         x_train_fs = x_train_outl
         y_train_fs = y_train_outl
@@ -77,8 +160,8 @@ class Engine:
         fs_remove_duplicate = False
         if (fs_remove_duplicate):
             x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_duplicates(x_train_fs,
-                                                                                           y_train_fs,
-                                                                                           x_test_fs)
+                                                                                   y_train_fs,
+                                                                                   x_test_fs)
 
         fs_remove_correlated = Configuration.get('feature_selector.remove_correlated_features')
         if (fs_remove_correlated):

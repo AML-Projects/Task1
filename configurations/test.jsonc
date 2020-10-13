@@ -37,5 +37,26 @@
 	},
 	"regression": {
 		"name": "xgb"
+	},
+	"search": {
+	    "imputer": {
+	        "name": ["mean", "median"]
+	    },
+	    "outlier": {
+            "fit_on": ["train", "test", "both"],
+	        "name": ["customOR", "lof", "iforest"],
+	        "strategy":["iqr"],
+	        "threshold": [10],
+	    },
+	    "feature_selector": {
+	        "corr_threshold" : [0.8, 0.9],
+	        "k" : [100, 200, 300]
+	    },
+        "normalizer": {
+            "name" : ["stdscaler", "minmaxscaler", "robustscaler"]
+        },
+        "regression":{
+            "name":["xgb"]
+        }
 	}
 }

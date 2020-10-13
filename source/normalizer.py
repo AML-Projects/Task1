@@ -5,34 +5,42 @@ Data normalizer
 __author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
 __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
 
+import pandas as pd
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+
 from logcreator.logcreator import Logcreator
-from sklearn import preprocessing
 
 
 class Normalizer:
-    def __init__(self):
+    def __init__(self, fit_on='train'):
+        self.fit_on = fit_on
         Logcreator.info("Start normalizer")
 
+    def to_DataFrame(self, x_train, y_train, x_test):
+        x_train = pd.DataFrame(x_train)
+        y_train = pd.DataFrame(y_train)
+        x_test = pd.DataFrame(x_test)
+        return x_train, y_train, x_test
+
     def standard_scaler(self, x_train, y_train, x_test):
-        scaler = preprocessing.StandardScaler()
-
-        x_train_norm = scaler.fit_transform(x_train)
-        x_test_norm = scaler.transform(x_test)
-
-        return x_train_norm, y_train, x_test_norm
+        return self.scale_data(StandardScaler(), x_train, y_train, x_test)
 
     def minmax_scaler(self, x_train, y_train, x_test):
-        scaler = preprocessing.MinMaxScaler()
-
-        x_train_norm = scaler.fit_transform(x_train)
-        x_test_norm = scaler.transform(x_test)
-
-        return x_train_norm, y_train, x_test_norm
+        return self.scale_data(MinMaxScaler(), x_train, y_train, x_test)
 
     def robust_scaler(self, x_train, y_train, x_test):
-        scaler = preprocessing.RobustScaler()
+        return self.scale_data(RobustScaler(), x_train, y_train, x_test)
 
-        x_train_scaled = scaler.fit_transform(x_train)
+    def scale_data(self, scaler, x_train, y_train, x_test):
+        x_train, y_train, x_test = self.to_DataFrame(x_train, y_train, x_test)
+        if self.fit_on == 'test':
+            scaler = scaler.fit(x_test)
+        elif self.fit_on == 'both':
+            scaler = scaler.fit(x_train.append(x_test))
+        else:
+            scaler = scaler.fit(x_train)
+
+        x_train_scaled = scaler.transform(x_train)
         x_test_scaled = scaler.transform(x_test)
 
         return x_train_scaled, y_train, x_test_scaled

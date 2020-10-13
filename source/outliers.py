@@ -11,7 +11,6 @@ from sklearn.ensemble import IsolationForest
 from sklearn.neighbors import LocalOutlierFactor
 
 from logcreator.logcreator import Logcreator
-from source.configuration import Configuration
 
 
 class CustomOutlierRemover:
@@ -93,31 +92,63 @@ class CustomOutlierRemover:
 
 
 class Outliers:
-    def __init__(self, strategy='z_score', threshold=0.0):
+    def __init__(self, strategy='z_score', threshold=0.0, fit_on='train'):
         self.strategy = strategy
         self.threshold = threshold
+        self.fit_on = fit_on
         Logcreator.info("Start outlier detection")
+
+    def to_DataFrame(self, x_train, y_train, x_test):
+        x_train = pd.DataFrame(x_train)
+        y_train = pd.DataFrame(y_train)
+        x_test = pd.DataFrame(x_test)
+        return x_train, y_train, x_test
+
+    def remove_outliers(self, ifo, x_train, y_train, x_test):
+        x_train, y_train, x_test = self.to_DataFrame(x_train, y_train, x_test)
+        if self.fit_on == 'test':
+            ifo.novelty = True
+            ifo = ifo.fit(x_test)
+            # predict always on train
+            outliers = ifo.predict(x_train)
+
+        elif self.fit_on == 'both':
+            ifo.novelty = True
+            ifo = ifo.fit(x_train.append(x_test))
+            # predict always on train
+            outliers = ifo.predict(x_train)
+
+        else:
+            outliers = ifo.fit_predict(x_train)
+
+        mask = outliers != -1
+        x_train_outl, y_train_outl = x_train[mask], y_train[mask]
+        Logcreator.info("Nr. of outliers removed: {}".format(x_train.shape[0] - x_train_outl.shape[0]))
+
+        return x_train_outl, y_train_outl, x_test
 
     def LOF(self, x_train, y_train, x_test):
         lof = LocalOutlierFactor(contamination='auto')
-        outliers = lof.fit_predict(x_train)
-        mask = outliers != -1
-        x_train_outl, y_train_outl = x_train[mask, :], y_train[mask]
-        Logcreator.info("Nr. of outliers removed: {}".format(x_train.shape[0] - x_train_outl.shape[0]))
-        return x_train_outl, y_train_outl, x_test
+
+        return self.remove_outliers(lof, x_train, y_train, x_test)
 
     def iForest(self, x_train, y_train, x_test):
         ifo = IsolationForest(contamination='auto', random_state=41)
-        outliers = ifo.fit_predict(x_train)
-        mask = outliers != -1
-        x_train_outl, y_train_outl = x_train[mask, :], y_train[mask]
-        Logcreator.info("Nr. of outliers removed: {}".format(x_train.shape[0] - x_train_outl.shape[0]))
-        return x_train_outl, y_train_outl, x_test
+
+        return self.remove_outliers(ifo, x_train, y_train, x_test)
 
     def customOR(self, x_train, y_train, x_test):
+        x_test, x_train, y_train = self.to_DataFrame(x_test, x_train, y_train)
         # strategy: z_score or iqr
         cor = CustomOutlierRemover(self.strategy, self.threshold, verbose=1)
-        cor.fit(x_train)
+
+        if self.fit_on == 'test':
+            cor.fit(x_test)
+        elif self.fit_on == 'both':
+            cor.fit(x_train.append(x_test))
+        else:
+            cor.fit(x_train)
+
         x_train_outl, y_train_outl = cor.remove(x_train, y_train)
 
         return x_train_outl, y_train_outl, x_test

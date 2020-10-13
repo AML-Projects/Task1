@@ -5,12 +5,13 @@
         "log_file" : "logs.txt"
     },
     "imputer": {
-        "name": "mean"
+        "name": "median"
     },
     "outliers": {
 		"name": "lof",
+		"fit_on" : "train",
 		"customOR": {
-			"method" : "z_score",
+			"method" : "iqr",
 			"threshold" : 10
 		}
     },
@@ -31,7 +32,8 @@
         "selectBestBasedOnImpurity" : "False",
     },
 	"normalizer": {
-		"name": "robustscaler"
+		"name": "robustscaler",
+		"fit_on" : "train"
 	},
 	"regression": {
 		"name": "xgb"

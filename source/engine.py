@@ -44,7 +44,9 @@ class Engine:
         x_train_imp, y_train_imp, x_test_imp = imp(x_train=x_train, y_train=y_train, x_test=x_test)
 
         # Outliers
-        outliers = Outliers(strategy=Configuration.get('outliers.customOR.method'), threshold=Configuration.get('outliers.customOR.threshold'))
+        outliers = Outliers(strategy=Configuration.get('outliers.customOR.method'),
+                            threshold=Configuration.get('outliers.customOR.threshold'),
+                            fit_on=Configuration.get('outliers.fit_on'))
         outliers_method = Configuration.get('outliers.name')
         switcher = {
             'lof': outliers.LOF,
@@ -95,7 +97,7 @@ class Engine:
                                                                                            x_test_fs)
 
         # Normalizer
-        normalizer = Normalizer()
+        normalizer = Normalizer(fit_on=Configuration.get('normalizer.fit_on'))
         normalizer_method = Configuration.get('normalizer.name')
         switcher = {
             'stdscaler': normalizer.standard_scaler,

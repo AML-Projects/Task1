@@ -13,6 +13,7 @@ from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_inf
 from logcreator.logcreator import Logcreator
 
 
+
 class TreeBasedFeatureSelector(TransformerMixin):
     """
     Selecting features base on impurity.
@@ -158,6 +159,16 @@ class FeatureSelector:
         # score_func: f_regression, mutual_info_regression, ...
         k_best = SelectKBest(score_func=mutual_info_regression, k=self.k)
 
+        #Not currently used, here the mutual information of each feature is calculated, k could be choosen according to that result
+        mi = mutual_info_regression(x_train, y_train)
+        mi = pd.Series(mi)
+        mi.index = x_train.columns
+        sum = 0
+        for feature in mi:
+            if feature == 0:
+                sum += 1
+        nr_of_relevant_features = mi.shape[1] - sum #Could be us as k
+        k_best = SelectKBest(score_func=mutual_info_regression, k=self.k)
         x_train_best = k_best.fit_transform(x_train, y_train.values.ravel())
         x_test_best = k_best.transform(x_test)
 

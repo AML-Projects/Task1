@@ -8,12 +8,26 @@
         "name": "mean"
     },
     "outliers": {
-        "name": "lof"
+		"name": "lof",
+		"customOR": {
+			"method" : "z_score",
+			"threshold" : 10
+		}
     },
     "feature_selector": {
+		"remove_features_with_many_Nan" : "False",
         "remove_constant_features" : "True",
+		"remove_constant_features_par": {
+			"threshold": 0.01
+		},
         "remove_correlated_features" : "True",
+		"remove_correlated_features_par" : {
+			"threshold" : 0.8
+		},
         "selectBestK" : "True",
+		"selectBestK_par" : {
+			"k" : 200
+		},
         "selectBestBasedOnImpurity" : "False",
     },
 	"normalizer": {

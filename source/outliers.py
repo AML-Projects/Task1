@@ -93,7 +93,9 @@ class CustomOutlierRemover:
 
 
 class Outliers:
-    def __init__(self):
+    def __init__(self, strategy='z_score', threshold=0.0):
+        self.strategy = strategy
+        self.threshold = threshold
         Logcreator.info("Start outlier detection")
 
     def LOF(self, x_train, y_train, x_test):
@@ -114,7 +116,7 @@ class Outliers:
 
     def customOR(self, x_train, y_train, x_test):
         # strategy: z_score or iqr
-        cor = CustomOutlierRemover(strategy=Configuration.get('outliers.customOR.method'), threshold=Configuration.get('outliers.customOR.threshold'), verbose=1)
+        cor = CustomOutlierRemover(self.strategy, self.threshold, verbose=1)
         cor.fit(x_train)
         x_train_outl, y_train_outl = cor.remove(x_train, y_train)
 

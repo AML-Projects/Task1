@@ -9,7 +9,7 @@ import pandas as pd
 from sklearn.base import TransformerMixin
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_info_regression, SelectFromModel
-
+from source.configuration import Configuration
 from logcreator.logcreator import Logcreator
 
 
@@ -48,25 +48,70 @@ class FeatureSelector:
         self.k = k
         self.correlation_threshold = corr_threshold
 
-    def remove_constant_features(self, x_train, y_train, x_test):
+    def remove_features_with_many_Nan(self, x_train, y_train, x_test):
+        """
+        Remove features which have a certain amount of nan values
+        """
+        nrRows = x_train.shape[0]
+        nrCols = x_train.shape[1]
+        threshold = 0.1
+        featuresToRemove = set()
+        for column in x_train.columns:
+            sum = x_train[column].isnull().sum()
+            if sum / nrRows > threshold:
+                featuresToRemove.add(column)
+        x_train.drop(labels=featuresToRemove, axis=1, inplace=True)
+        x_test.drop(labels=featuresToRemove, axis=1, inplace=True)
+        return x_train, y_train, x_test
+
+    def remove_constant_features(self, x_train, y_train, x_test, threshold=0):
         """
         Remove features with zero or almost zero variance depending on the threshold.
         """
-        constant_filter = VarianceThreshold(threshold=0)
+        Logcreator.info("\nRemove constant features:")
+        x_train = pd.DataFrame(x_train)
+        y_train = pd.DataFrame(y_train)
+        x_test = pd.DataFrame(x_test)
 
-        x_train_feature = constant_filter.fit_transform(x_train, y_train)
+        constant_filter = VarianceThreshold(threshold=threshold)
+
+        constant_filter.fit(x_train, y_train)
+
+        constant_columns = [column for column in x_train.columns
+                            if column not in x_train.columns[constant_filter.get_support()]]
+        constColumns = ""
+        for column in constant_columns:
+            constColumns += (str(column) + ", ")
+        Logcreator.info("Following columns are constant: " + str(constant_columns))
+
+        x_train_feature = constant_filter.transform(x_train)
         x_test_feature = constant_filter.transform(x_test)
 
         Logcreator.info("Variance Threshold ", constant_filter.get_params()['threshold'],
                         " -> nr of features: ",
                         x_train_feature.shape[1])
+        Logcreator.info("Removed: " + str(x_train.shape[1] - x_train_feature.shape[1]) + " features")
 
         return x_train_feature, y_train, x_test_feature
+
+    def remove_duplicates(self, x_train, y_train, x_test):
+        """
+        Detect duplicate columns in training set and remove those columns in training and testset
+        """
+        Logcreator.info("\nRemove Duplicates:")
+        x_train = pd.DataFrame(x_train)
+        y_train = pd.DataFrame(y_train)
+        x_test = pd.DataFrame(x_test)
+
+        train_features_T = x_train.T
+        duplicateFeatures = train_features_T.duplicated()
+        print(duplicateFeatures.sum()) #Is always 0 for our dataset, therefore we don't do duplicate removing
 
     def remove_correlated_features(self, x_train, y_train, x_test):
         """
         Removes feature based on how much they correlate.
         """
+        Logcreator.info("\nRemove Correlated Features:")
         x_train = pd.DataFrame(x_train)
         y_train = pd.DataFrame(y_train)
         x_test = pd.DataFrame(x_test)
@@ -76,7 +121,6 @@ class FeatureSelector:
 
         self.correlation_threshold = 0.8
 
-        # TODO maybe don't remove all correlated features, but kee one of them
         for i in range(len(correlation_matrix.columns)):
             for j in range(i):
                 if abs(correlation_matrix.iloc[i, j]) > self.correlation_threshold:
@@ -85,7 +129,8 @@ class FeatureSelector:
 
         x_train.drop(labels=correlated_features, axis=1, inplace=True)
         x_test.drop(labels=correlated_features, axis=1, inplace=True)
-
+        Logcreator.info("Following features are removed: " + str(correlated_features))
+        Logcreator.info("Nr. of features remvoed: " + str(len(correlated_features)))
         Logcreator.info("Correlation Threshold ", self.correlation_threshold,
                         " -> nr of features: ",
                         x_train.shape[1])
@@ -96,7 +141,7 @@ class FeatureSelector:
         """
         Expecting y to be a pandas Dataframe.
         """
-
+        Logcreator.info("\nSelect Best k features:")
         # score_func: f_regression, mutual_info_regression, ...
         k_best = SelectKBest(score_func=mutual_info_regression, k=self.k)
 
@@ -108,6 +153,7 @@ class FeatureSelector:
         return x_train_best, y_train, x_test_best
 
     def selectBestBasedOnImpurity(self, x_train, y_train, x_test):
+        Logcreator.info("\nSelect Best Based on Impurity")
         selector = TreeBasedFeatureSelector()
 
         x_train_best = selector.fit_transform(x_train, y_train)

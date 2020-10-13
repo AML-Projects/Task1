@@ -24,6 +24,14 @@ class Engine:
 
     def train(self, x_train, y_train, x_test):
 
+        # Feature Selection (Remove features with to many nan
+        feature_selector = FeatureSelector()
+        fs_remove_nan = Configuration.get('feature_selector.remove_features_with_many_Nan')
+        if (fs_remove_nan):
+            x_train, y_train, x_test = feature_selector.remove_features_with_many_Nan(x_train,
+                                                                                   y_train,
+                                                                                   x_test)
+
         # Imputer
         imputer = Imputer()
         imputer_type = Configuration.get('imputer.name')
@@ -36,7 +44,7 @@ class Engine:
         x_train_imp, y_train_imp, x_test_imp = imp(x_train=x_train, y_train=y_train, x_test=x_test)
 
         # Outliers
-        outliers = Outliers()
+        outliers = Outliers(strategy=Configuration.get('outliers.customOR.method'), threshold=Configuration.get('outliers.customOR.threshold'))
         outliers_method = Configuration.get('outliers.name')
         switcher = {
             'lof': outliers.LOF,
@@ -47,15 +55,29 @@ class Engine:
         x_train_outl, y_train_outl, x_test_outl = outl(x_train=x_train_imp, y_train=y_train_imp, x_test=x_test_imp)
 
         # Feature selection
-        feature_selector = FeatureSelector()
-        x_train_fs = pd.DataFrame(x_train_outl)
-        y_train_fs = pd.DataFrame(y_train_outl)
-        x_test_fs = pd.DataFrame(x_test_outl)
+        feature_selector = FeatureSelector(k=Configuration.get('feature_selector.selectBestK_par.k'),
+                                           corr_threshold=Configuration.get('feature_selector.remove_correlated_features_par.threshold'))
+
+        x_train_fs = x_train_outl
+        y_train_fs = y_train_outl
+        x_test_fs = x_test_outl
         fs_remove_constant = Configuration.get('feature_selector.remove_constant_features')
         if (fs_remove_constant):
             x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_constant_features(x_train_fs,
                                                                                           y_train_fs,
                                                                                           x_test_fs)
+            threshold = Configuration.get('feature_selector.remove_constant_features_par.threshold')
+            x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_constant_features(pd.DataFrame(x_train_fs),
+                                                                                          pd.DataFrame(y_train_fs),
+                                                                                          pd.DataFrame(x_test_fs),
+                                                                                          threshold)
+        # We do not remove duplicates as there are no duplicate features in the dataset
+        fs_remove_duplicate = False
+        if (fs_remove_duplicate):
+            x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_duplicates(x_train_fs,
+                                                                                           y_train_fs,
+                                                                                           x_test_fs)
+
         fs_remove_correlated = Configuration.get('feature_selector.remove_correlated_features')
         if (fs_remove_correlated):
             x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_correlated_features(x_train_fs,

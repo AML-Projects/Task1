@@ -5,11 +5,12 @@ Outlier detection
 __author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
 __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
 
-from logcreator.logcreator import Logcreator
-from sklearn.neighbors import LocalOutlierFactor
-from sklearn.ensemble import IsolationForest
-import pandas as pd
 import numpy as np
+import pandas as pd
+from sklearn.ensemble import IsolationForest
+from sklearn.neighbors import LocalOutlierFactor
+
+from logcreator.logcreator import Logcreator
 from source.configuration import Configuration
 
 
@@ -104,7 +105,7 @@ class Outliers:
         return x_train_outl, y_train_outl, x_test
 
     def iForest(self, x_train, y_train, x_test):
-        ifo = IsolationForest(contamination='auto')
+        ifo = IsolationForest(contamination='auto', random_state=41)
         outliers = ifo.fit_predict(x_train)
         mask = outliers != -1
         x_train_outl, y_train_outl = x_train[mask, :], y_train[mask]

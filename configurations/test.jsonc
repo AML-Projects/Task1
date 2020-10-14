@@ -40,7 +40,10 @@
 	},
 	"search": {
 	    "imputer": {
-	        "name": ["mean", "median"]
+            "iterative_n_nearest_features" : [10],
+	        "knn_n_neighbors" : [20],
+            "knn_weights": ["uniform", "distance"],
+            "name": ["mean", "median"],
 	    },
 	    "outlier": {
             "fit_on": ["train", "test", "both"],
@@ -55,10 +58,11 @@
             "remove_correlated":["True"],
             "remove_correlated_threshold":[0.8],
             "use_select_best_based_on_impurity" : ["False"],
-            "use_select_best_k" : ["False"],
+            "use_select_best_k" : ["True"],
 	    },
         "normalizer": {
-            "name" : ["stdscaler", "minmaxscaler", "robustscaler"]
+            "fit_on": ["train", "test", "both"],
+            "name" : ["stdscaler", "robustscaler"]
         },
         "regression":{
             "name":["xgb"]

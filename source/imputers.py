@@ -16,9 +16,12 @@ from logcreator.logcreator import Logcreator
 
 
 class Imputer(BaseEstimator, TransformerMixin):
-    def __init__(self, name='mean'):
-        self.name = name
+    def __init__(self, name='median', knn_weights='distance', knn_n_neighbors=20, iterative_n_nearest_features=10):
         Logcreator.info("Imputer initialized")
+        self.name = name
+        self.knn_weights = knn_weights
+        self.knn_n_neighbors = knn_n_neighbors
+        self.iterative_n_nearest_features = iterative_n_nearest_features
 
     # TODO if we want to use sklearn grid_search and pipeline we would need to implement fit and transform
     def fit(self, X, y=None):
@@ -31,7 +34,8 @@ class Imputer(BaseEstimator, TransformerMixin):
         switcher = {
             'mean': self.mean_simple_imputer,
             'median': self.median_simple_imputer,
-            'iterative': self.multivariate_imputer
+            'iterative': self.multivariate_imputer,
+            'knn': self.knn_imputer
         }
         imp = switcher.get(self.name)
         return imp(x_train=x_train, y_train=y_train, x_test=x_test)
@@ -62,17 +66,21 @@ class Imputer(BaseEstimator, TransformerMixin):
         Logcreator.info("Nr. of rows without any NaN: {} \n".format(
             x_train.shape[0] - sum([True for idx, row in x_train.iterrows() if any(row.isna())])))
 
-        imp = IterativeImputer(missing_values=np.nan, max_iter=1, sample_posterior=False, random_state=0)
+        imp = IterativeImputer(missing_values=np.nan, max_iter=10,
+                               sample_posterior=True,
+                               initial_strategy='median',
+                               # Nearness between features is measured using the absolute correlation coefficient between each feature pair
+                               n_nearest_features=self.iterative_n_nearest_features,
+                               random_state=0)
         imp.fit(x_train)
         Logcreator.info(x_train.head())
 
-        IterativeImputer(random_state=0)
         x_train_imputed = imp.transform(x_train)
         x_test_imputed = imp.transform(x_test)
         return x_train_imputed, y_train, x_test_imputed
 
     def knn_imputer(self, x_train, y_train, x_test):
-        imputer = KNNImputer(n_neighbors=40, weights="uniform")
+        imputer = KNNImputer(missing_values=np.nan, n_neighbors=self.knn_n_neighbors, weights=self.knn_weights)
 
         x_train_imputed = imputer.fit_transform(x_train)
         x_test_imputed = imputer.transform(x_test)

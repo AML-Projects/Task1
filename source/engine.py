@@ -6,6 +6,7 @@ __author__ = 'Andreas Kaufmann, Jona Braun, Sarah Morillo'
 __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@student.ethz.ch"
 
 import itertools
+import os
 
 import pandas as pd
 from sklearn.metrics import r2_score
@@ -31,59 +32,114 @@ class Engine:
         feature_selector_par_list = self.get_serach_list('search.feature_selector')
         normalizer_par_list = self.get_serach_list('search.normalizer')
         regression_par_list = self.get_serach_list('search.regression')
+
         number_of_loops = len(imputer_par_list) * len(outlier_par_list) * len(feature_selector_par_list) \
                           * len(normalizer_par_list) * len(regression_par_list)
 
         Logcreator.h1("Number of loops:", number_of_loops)
         loop_counter = 0
-        # TODO clean up for loops
-        for imp_data in imputer_par_list:
-            # TODO include feature_selector.remove_features_with_many_Nan
 
-            imputer = Imputer(**imp_data)
-            x_train_imp, y_train_imp, x_test_imp = imputer.transform_custom(x_train=x_train,
-                                                                            y_train=y_train,
-                                                                            x_test=x_test)
+        # prepare out columns names
+        columns_out = ["R2 Score Test", "R2 Score Training"]
+        columns_out.extend(['params', 'mean_test_score', 'std_test_score', 'mean_train_score', 'std_train_score'])
+        # combine all keys
+        columns_out.extend(['imputer_' + s for s in list(imputer_par_list[0].keys())])
+        columns_out.extend(['outlier_' + s for s in list(outlier_par_list[0].keys())])
+        columns_out.extend(['feature_selector_' + s for s in list(feature_selector_par_list[0].keys())])
+        columns_out.extend(['normalizer_' + s for s in list(normalizer_par_list[0].keys())])
+        columns_out.extend(['regression_' + s for s in list(regression_par_list[0].keys())])
 
-            for out_data in outlier_par_list:
+        # create output dataframe
+        results_out = pd.DataFrame(columns=columns_out)
 
-                outlier = Outliers(**out_data)
-                x_train_out, y_train_out, x_test_out = outlier.transform_custom(x_train=x_train_imp,
-                                                                                y_train=y_train_imp,
-                                                                                x_test=x_test_imp)
+        try:
+            # TODO clean up for loops
+            for imp_data in imputer_par_list:
+                # TODO include feature_selector.remove_features_with_many_Nan
 
-                for feature_selector_data in feature_selector_par_list:
+                imputer = Imputer(**imp_data)
+                x_train_imp, y_train_imp, x_test_imp = imputer.transform_custom(x_train=x_train,
+                                                                                y_train=y_train,
+                                                                                x_test=x_test)
 
-                    feature_selector = FeatureSelector(**feature_selector_data)
+                for out_data in outlier_par_list:
 
-                    x_train_fs, y_train_fs, x_test_fs = feature_selector.transform_custom(x_train=x_train_out,
-                                                                                          y_train=y_train_out,
-                                                                                          x_test=x_test_out)
+                    outlier = Outliers(**out_data)
+                    x_train_out, y_train_out, x_test_out = outlier.transform_custom(x_train=x_train_imp,
+                                                                                    y_train=y_train_imp,
+                                                                                    x_test=x_test_imp)
 
-                    for normalizer_data in normalizer_par_list:
+                    for feature_selector_data in feature_selector_par_list:
 
-                        normalizer = Normalizer(**normalizer_data)
+                        feature_selector = FeatureSelector(**feature_selector_data)
 
-                        x_train_norm, y_train_norm, x_test_norm = normalizer.transform_custom(x_train=x_train_fs,
-                                                                                              y_train=y_train_fs,
-                                                                                              x_test=x_test_fs)
+                        x_train_fs, y_train_fs, x_test_fs = feature_selector.transform_custom(x_train=x_train_out,
+                                                                                              y_train=y_train_out,
+                                                                                              x_test=x_test_out)
 
-                        for regression_data in regression_par_list:
-                            # TODO clean up output of current parameters
-                            Logcreator.info("\n--------------------------------------")
-                            Logcreator.info("Iteration", loop_counter)
-                            Logcreator.info("imputer", imp_data)
-                            Logcreator.info("outlier", out_data)
-                            Logcreator.info("feature_selector", feature_selector_data)
-                            Logcreator.info("normalizer", normalizer_data)
-                            Logcreator.info("regression", regression_data)
-                            Logcreator.info("\n----------------------------------------")
+                        for normalizer_data in normalizer_par_list:
 
-                            regressor = Regression(**regression_data)
-                            regressor.fit_predict(x_train=x_train_norm, y_train=y_train_norm,
-                                                  x_test=x_test_norm)
+                            normalizer = Normalizer(**normalizer_data)
 
-                            loop_counter = loop_counter + 1
+                            x_train_norm, y_train_norm, x_test_norm = normalizer.transform_custom(x_train=x_train_fs,
+                                                                                                  y_train=y_train_fs,
+                                                                                                  x_test=x_test_fs)
+
+                            for regression_data in regression_par_list:
+                                # TODO clean up output of current parameters
+                                Logcreator.info("\n--------------------------------------")
+                                Logcreator.info("Iteration", loop_counter)
+                                Logcreator.info("imputer", imp_data)
+                                Logcreator.info("outlier", out_data)
+                                Logcreator.info("feature_selector", feature_selector_data)
+                                Logcreator.info("normalizer", normalizer_data)
+                                Logcreator.info("regression", regression_data)
+                                Logcreator.info("\n----------------------------------------")
+
+                                regressor = Regression(**regression_data)
+                                best_model, x_test_split, y_test_split, x_train_split, y_train_split, search_results = \
+                                    regressor.fit_predict(
+                                        x_train=x_train_norm, y_train=y_train_norm,
+                                        x_test=x_test_norm)
+
+                                predicted_values = best_model.predict(x_train_split)
+                                score_train = r2_score(y_true=y_train_split, y_pred=predicted_values)
+                                Logcreator.info("R2 Score achieved on training set: {}".format(score_train))
+
+                                predicted_values = best_model.predict(x_test_split)
+                                score_test = r2_score(y_true=y_test_split, y_pred=predicted_values)
+                                Logcreator.info("R2 Score achieved on test set: {}".format(score_test))
+
+                                for i in range(0,
+                                               5):  # append multiple rows of the grid search result, not just the best
+                                    # update output
+                                    # TODO not so nice because we only take the values, so the order has to be correct;
+                                    #  Maybe converte everything to one dictionary and then append the dictionary to the pandas dataframe;
+                                    #  But works for now as long as the order is correct
+                                    output_row = list()
+                                    output_row.append(score_test)
+                                    output_row.append(score_train)
+                                    output_row.extend(search_results[
+                                                          ['params', 'mean_test_score', 'std_test_score',
+                                                           'mean_train_score',
+                                                           'std_train_score']].iloc[i])
+
+                                    output_row.extend(list(imp_data.values()))
+                                    output_row.extend(list(out_data.values()))
+                                    output_row.extend(list(feature_selector_data.values()))
+                                    output_row.extend(list(normalizer_data.values()))
+                                    output_row.extend(list(regression_data.values()))
+                                    # TODO save loop_counter in output_row, so we compare with the log
+
+                                    results_out = results_out.append(
+                                        pd.DataFrame(output_row, index=results_out.columns).T)
+
+                                loop_counter = loop_counter + 1
+
+        finally:
+            # save dataframe
+            pd.DataFrame.to_csv(results_out, os.path.join(Configuration.output_directory, 'search_results.csv'),
+                                index=False)
 
     def get_serach_list(self, config_name):
         param_dict = self.get_serach_params(config_name)
@@ -120,7 +176,7 @@ class Engine:
         return param_dict
 
     def train(self, x_train, y_train, x_test):
-        if True:  # TODO move to somewhere else
+        if True:  # TODO move to somewhere else because returning nothing results in error
             self.search(x_train, y_train, x_test)
             return
 
@@ -217,10 +273,12 @@ class Engine:
             'xgb': regression.xgboost_regression
         }
         reg = switcher.get(regression_method)
-        regressor, x_test_split, y_test_split, x_train_split, y_train_split = reg(x_train=x_train_norm,
-                                                                                  y_train=y_train_norm,
-                                                                                  x_test=x_test_norm,
-                                                                                  handin=argumenthelper.get_args().handin)
+        regressor, x_test_split, y_test_split, x_train_split, y_train_split, search_results = \
+            reg(x_train=x_train_norm,
+                y_train=y_train_norm,
+                x_test=x_test_norm,
+                handin=argumenthelper.get_args().handin)
+
         return regressor, x_test_split, y_test_split, x_train_split, y_train_split
 
     def predict(self, regressor, x_test_split, y_test_split, x_test_index, x_train_split, y_train_split):
@@ -236,4 +294,4 @@ class Engine:
             predicted_values = regressor.predict(x_test_split)
             output_csv = pd.concat([pd.Series(x_test_index.values), pd.Series(predicted_values.flatten())], axis=1)
             output_csv.columns = ["id", "y"]
-            pd.DataFrame.to_csv(output_csv, Configuration.output_directory + '\\submit.csv', index=False)
+            pd.DataFrame.to_csv(output_csv, os.path.join(Configuration.output_directory, 'submit.csv'), index=False)

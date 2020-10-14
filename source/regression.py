@@ -11,6 +11,7 @@ import pandas as pd
 import xgboost as xgb
 from sklearn import model_selection
 from sklearn.linear_model import Ridge
+from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.svm import SVR
 
 from logcreator.logcreator import Logcreator
@@ -23,9 +24,14 @@ class Regression:
         self.stratified_split = stratified_split
 
     def fit_predict(self, x_train, y_train, x_test):
-        # TODO choose regressor function
+        switcher = {
+            'ridge': self.ridge_regression,
+            'svr': self.svr_regression,
+            'xgb': self.xgboost_regression
+        }
+        reg = switcher.get(self.name)
 
-        return self.ridge_regression(x_train, y_train, x_test, False)
+        return reg(x_train, y_train, x_test, False)
 
     def ridge_regression(self, x_train, y_train, x_test, handin):
         x_test_split, x_train_split, y_test_split, y_train_split = self.get_data_split(handin, x_test, x_train, y_train)
@@ -44,11 +50,11 @@ class Regression:
 
         model = Ridge(random_state=41)
 
-        ridge = self.do_grid_search(model, nr_folds, parameters, x_train_split, y_train_split)
+        ridge, search_results = self.do_grid_search(model, nr_folds, parameters, x_train_split, y_train_split)
 
         # Use ridge regression
         ridge.fit(x_train_split, y_train_split)
-        return ridge, x_test_split, y_test_split, x_train_split, y_train_split
+        return ridge, x_test_split, y_test_split, x_train_split, y_train_split, search_results
 
     def svr_regression(self, x_train, y_train, x_test, handin):
         x_test_split, x_train_split, y_test_split, y_train_split = self.get_data_split(handin, x_test, x_train, y_train)
@@ -66,43 +72,46 @@ class Regression:
             "degree": [1],  # of poly kernel
         }
 
-        best_model = self.do_grid_search(model, nr_folds, parameters, x_train_split, y_train_split)
+        best_model, search_results = self.do_grid_search(model, nr_folds, parameters, x_train_split, y_train_split)
 
         best_model.fit(x_train_split, y_train_split)
-        return best_model, x_test_split, y_test_split, x_train_split, y_train_split
+        return best_model, x_test_split, y_test_split, x_train_split, y_train_split, search_results
 
     def xgboost_regression(self, x_train, y_train, x_test, handin):
         x_test_split, x_train_split, y_test_split, y_train_split = self.get_data_split(handin, x_test, x_train, y_train)
 
-        nr_folds = math.floor(math.sqrt(x_train_split.shape[0]) / 2)
+        nr_folds = math.floor(math.sqrt(x_train_split.shape[0]) / 3)
 
         y_train_split = y_train_split.astype(int)
         param = {}
         param['booster'] = ['gbtree']
+        param['objective'] = ['reg:squarederror']
         # setting max_depth to high results in overfitting
-        param['max_depth'] = [3]
-        param['min_child_weight'] = [1, 2]
+        param['max_depth'] = [2, 3, 4]
+        param['min_child_weight'] = [1, 2, 3]
         # subsampling of rows: lower values of subsample can prevent overfitting
         param['subsample'] = [i / 10. for i in range(8, 11)]
         # subsampling of columns:
-        param['colsample_bytree'] = [i / 10. for i in range(8, 11)]
+        # param['colsample_bytree'] = [i / 10. for i in range(8, 11)]
         # learning rate eta
-        param['eta'] = [.1, 0.08]  #
-        # param['objective'] = ['reg:squarederror']
+        param['eta'] = [.1, 0.09, 0.08]
 
         model = xgb.XGBRegressor(random_state=41)
 
-        best_model = self.do_grid_search(model, nr_folds, param, x_train_split, y_train_split)
+        best_model, search_results = self.do_grid_search(model, nr_folds, param, x_train_split, y_train_split)
 
-        best_model.fit(x_train_split, y_train_split)
-        return best_model, x_test_split, y_test_split, x_train_split, y_train_split
+        return best_model, x_test_split, y_test_split, x_train_split, y_train_split, search_results
 
     def do_grid_search(self, model, nr_folds, parameters, x_train_split, y_train_split):
+        # TODO Maybe use Stratified split
+        # cv = RepeatedStratifiedKFold(n_splits=nr_folds, n_repeats=1, random_state=1)
         grid_search = model_selection.GridSearchCV(model, parameters,
                                                    # scoring='neg_mean_squared_error',
                                                    scoring='r2',
                                                    # use every cpu thread
                                                    n_jobs=-1,
+                                                   # Refit an estimator using the best found parameters
+                                                   refit=True,
                                                    cv=nr_folds,
                                                    # Return train score to check for overfitting
                                                    return_train_score=True,
@@ -125,9 +134,9 @@ class Regression:
         Logcreator.info(
             results[['params', 'mean_test_score', 'std_test_score', 'mean_train_score', 'std_train_score']].head(30))
 
-        ridge = grid_search.best_estimator_
+        best_model = grid_search.best_estimator_
 
-        return ridge
+        return best_model, results
 
     def get_data_split(self, handin, x_test, x_train, y_train):
         if not handin:

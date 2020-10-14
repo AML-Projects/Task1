@@ -41,26 +41,32 @@ class Engine:
             # TODO include feature_selector.remove_features_with_many_Nan
 
             imputer = Imputer(**imp_data)
-            x_train, y_train, x_test = imputer.transform_custom(x_train=x_train, y_train=y_train, x_test=x_test)
+            x_train_imp, y_train_imp, x_test_imp = imputer.transform_custom(x_train=x_train,
+                                                                            y_train=y_train,
+                                                                            x_test=x_test)
 
             for out_data in outlier_par_list:
 
                 outlier = Outliers(**out_data)
-                x_train, y_train, x_test = outlier.transform_custom(x_train=x_train, y_train=y_train, x_test=x_test)
+                x_train_out, y_train_out, x_test_out = outlier.transform_custom(x_train=x_train_imp,
+                                                                                y_train=y_train_imp,
+                                                                                x_test=x_test_imp)
 
                 for feature_selector_data in feature_selector_par_list:
 
                     feature_selector = FeatureSelector(**feature_selector_data)
 
-                    x_train, y_train, x_test = feature_selector.transform_custom(x_train=x_train, y_train=y_train,
-                                                                                 x_test=x_test)
+                    x_train_fs, y_train_fs, x_test_fs = feature_selector.transform_custom(x_train=x_train_out,
+                                                                                          y_train=y_train_out,
+                                                                                          x_test=x_test_out)
 
                     for normalizer_data in normalizer_par_list:
 
                         normalizer = Normalizer(**normalizer_data)
 
-                        x_train, y_train, x_test = normalizer.transform_custom(x_train=x_train, y_train=y_train,
-                                                                               x_test=x_test)
+                        x_train_norm, y_train_norm, x_test_norm = normalizer.transform_custom(x_train=x_train_fs,
+                                                                                              y_train=y_train_fs,
+                                                                                              x_test=x_test_fs)
 
                         for regression_data in regression_par_list:
                             # TODO clean up output of current parameters
@@ -74,8 +80,8 @@ class Engine:
                             Logcreator.info("\n----------------------------------------")
 
                             regressor = Regression(**regression_data)
-                            regressor.fit_predict(x_train=x_train, y_train=y_train,
-                                                  x_test=x_test)
+                            regressor.fit_predict(x_train=x_train_norm, y_train=y_train_norm,
+                                                  x_test=x_test_norm)
 
                             loop_counter = loop_counter + 1
 

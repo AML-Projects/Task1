@@ -34,6 +34,7 @@ class Engine:
 
         # TODO clean up for loops
         for imp_data in imputer_par_list:
+            # TODO include feature_selector.remove_features_with_many_Nan
 
             imputer = Imputer(**imp_data)
             x_train, y_train, x_test = imputer.transform_custom(x_train=x_train, y_train=y_train, x_test=x_test)
@@ -140,7 +141,7 @@ class Engine:
 
         # Feature selection
         feature_selector = FeatureSelector(k=Configuration.get('feature_selector.selectBestK_par.k'),
-                                           corr_threshold=Configuration.get(
+                                           remove_correlated_threshold=Configuration.get(
                                                'feature_selector.remove_correlated_features_par.threshold'))
 
         x_train_fs = x_train_outl

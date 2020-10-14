@@ -13,7 +13,6 @@ from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_inf
 from logcreator.logcreator import Logcreator
 
 
-
 class TreeBasedFeatureSelector(TransformerMixin):
     """
     Selecting features base on impurity.
@@ -44,21 +43,66 @@ class FeatureSelector:
     Partly based on # https://stackabuse.com/applying-filter-methods-in-python-for-feature-selection/
     """
 
-    def __init__(self, k=200, remove_constant_features_par=True, constant_features_threshold=0.01, corr_threshold=0.8):
+    def __init__(self, remove_constant=True,
+                 remove_constant_threshold=0.01,
+                 remove_correlated=True,
+                 remove_correlated_threshold=0.8,
+                 use_select_best_k=True,
+                 k=200,
+                 use_select_best_based_on_impurity=False,
+                 ):
         Logcreator.info("Feature Selection")
+
+        if isinstance(remove_constant, str):
+            remove_constant = remove_constant == "True"
+        if isinstance(remove_correlated, str):
+            remove_correlated = remove_correlated == "True"
+        if isinstance(use_select_best_k, str):
+            use_select_best_k = use_select_best_k == "True"
+        if isinstance(use_select_best_based_on_impurity, str):
+            use_select_best_based_on_impurity = use_select_best_based_on_impurity == "True"
+
+        self.remove_constant = remove_constant
+        self.constant_features_threshold = remove_constant_threshold
+        self.remove_correlated = remove_correlated
+        self.correlation_threshold = remove_correlated_threshold
+        self.use_select_best_k = use_select_best_k
         self.k = k
-        self.remove_constant_features_par = remove_constant_features_par
-        self.constant_features_threshold = constant_features_threshold
-        self.correlation_threshold = corr_threshold
+        self.use_selectBestBasedOnImpurity = use_select_best_based_on_impurity
 
     def transform_custom(self, x_train, y_train, x_test):
-        if self.remove_constant_features_par:
+        if self.remove_constant:
+            x_train, y_train, x_test = self.remove_constant_features(x_train,
+                                                                     y_train,
+                                                                     x_test,
+                                                                     0.0)
+
             x_train, y_train, x_test = self.remove_constant_features(x_train,
                                                                      y_train,
                                                                      x_test,
                                                                      self.constant_features_threshold)
 
-        # TODO copy other options from engine
+        # We do not remove duplicates as there are no duplicate features in the dataset
+        fs_remove_duplicate = False
+        if fs_remove_duplicate:
+            x_train, y_train, x_test = self.remove_duplicates(x_train,
+                                                              y_train,
+                                                              x_test)
+
+        if self.remove_correlated:
+            x_train, y_train, x_test = self.remove_correlated_features(x_train,
+                                                                       y_train,
+                                                                       x_test)
+
+        if self.use_select_best_k:
+            x_train, y_train, x_test = self.selectBestK(x_train,
+                                                        y_train,
+                                                        x_test)
+
+        if self.use_selectBestBasedOnImpurity:
+            x_train, y_train, x_test = self.selectBestBasedOnImpurity(x_train,
+                                                                      y_train,
+                                                                      x_test)
 
         return x_train, y_train, x_test
 

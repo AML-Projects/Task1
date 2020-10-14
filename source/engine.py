@@ -31,7 +31,11 @@ class Engine:
         feature_selector_par_list = self.get_serach_list('search.feature_selector')
         normalizer_par_list = self.get_serach_list('search.normalizer')
         regression_par_list = self.get_serach_list('search.regression')
+        number_of_loops = len(imputer_par_list) * len(outlier_par_list) * len(feature_selector_par_list) \
+                          * len(normalizer_par_list) * len(regression_par_list)
 
+        Logcreator.h1("Number of loops:", number_of_loops)
+        loop_counter = 0
         # TODO clean up for loops
         for imp_data in imputer_par_list:
             # TODO include feature_selector.remove_features_with_many_Nan
@@ -60,15 +64,20 @@ class Engine:
 
                         for regression_data in regression_par_list:
                             # TODO clean up output of current parameters
-                            Logcreator.h1("imputer", imp_data)
-                            Logcreator.h1("outlier", out_data)
-                            Logcreator.h1("feature_selector", feature_selector_data)
-                            Logcreator.h1("normalizer", normalizer_data)
-                            Logcreator.h1("regression", regression_data)
+                            Logcreator.info("\n--------------------------------------")
+                            Logcreator.info("Iteration", loop_counter)
+                            Logcreator.info("imputer", imp_data)
+                            Logcreator.info("outlier", out_data)
+                            Logcreator.info("feature_selector", feature_selector_data)
+                            Logcreator.info("normalizer", normalizer_data)
+                            Logcreator.info("regression", regression_data)
+                            Logcreator.info("\n----------------------------------------")
 
                             regressor = Regression(**regression_data)
                             regressor.fit_predict(x_train=x_train, y_train=y_train,
                                                   x_test=x_test)
+
+                            loop_counter = loop_counter + 1
 
     def get_serach_list(self, config_name):
         param_dict = self.get_serach_params(config_name)

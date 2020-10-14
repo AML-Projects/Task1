@@ -108,8 +108,10 @@ class Engine:
         config = Configuration.get(config_name)
         attribute_names = [a for a in dir(config) if not a.startswith('_')]
         # count and index is somehow also an attribute of the config object
-        attribute_names.remove('count')
-        attribute_names.remove('index')
+        if 'count' in attribute_names:
+            attribute_names.remove('count')
+        if 'index' in attribute_names:
+            attribute_names.remove('index')
 
         param_dict = dict()
         for name, element in zip(attribute_names, config):

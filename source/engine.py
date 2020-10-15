@@ -40,7 +40,7 @@ class Engine:
         loop_counter = 0
 
         # prepare out columns names
-        columns_out = ["R2 Score Test", "R2 Score Training"]
+        columns_out = ["Loop_counter", "R2 Score Test", "R2 Score Training"]
         columns_out.extend(['params', 'mean_test_score', 'std_test_score', 'mean_train_score', 'std_train_score'])
         # combine all keys
         columns_out.extend(['imputer_' + s for s in list(imputer_par_list[0].keys())])
@@ -117,6 +117,7 @@ class Engine:
                                     #  Maybe converte everything to one dictionary and then append the dictionary to the pandas dataframe;
                                     #  But works for now as long as the order is correct
                                     output_row = list()
+                                    output_row.append(loop_counter)
                                     output_row.append(score_test)
                                     output_row.append(score_train)
                                     output_row.extend(search_results[

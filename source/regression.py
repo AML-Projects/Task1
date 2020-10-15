@@ -13,6 +13,8 @@ from sklearn import model_selection
 from sklearn.linear_model import Ridge
 from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.svm import SVR
+import matplotlib.pyplot as plt
+import numpy as np
 
 from logcreator.logcreator import Logcreator
 
@@ -138,6 +140,55 @@ class Regression:
 
         return best_model, results
 
+    def strat_split(self, x_train, y_train, nrOfBuckets):
+        x_train_strat = x_train
+        y_train_strat = y_train
+        # plt.figure()
+        # y_train.plot.hist()
+        # plt.show()
+        """
+        Fill samples into buckets to generate a certain amount of classes for the stratified split
+        """
+
+        bucketLabels = [a for a in range(nrOfBuckets)]
+        try:
+            y_train_strat['buckets'] = pd.qcut(y_train['y'], q=nrOfBuckets, labels=bucketLabels)
+
+            Logcreator.info("Nr of buckets for stratified split: " + str(nrOfBuckets))
+        except ValueError:
+            x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed = self.strat_split(x_train, y_train, nrOfBuckets-1)
+            return x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed
+        y_train_strat['buckets_int'] = y_train_strat['buckets'].astype(int)
+        y_train_strat = y_train_strat.drop(['buckets'], axis=1)
+
+        """
+         Remove samples for which we have only one age class, 
+         so that we can do a stratified split
+        """
+        # y_train_strat['buckets_int'] = y_train_strat['buckets'].astype(int)
+        counts = y_train_strat['buckets_int'].value_counts()
+        Logcreator.info("The number of samples for each 'age/class' are:\n", pd.DataFrame(counts).T)
+
+        classes_with_one_el = counts[counts == 1].index.values
+        Logcreator.info("'Age' with only one sample:", classes_with_one_el)
+
+        remove_columns = y_train_strat["buckets_int"].isin(classes_with_one_el)
+
+        # Save samples/rows we remove
+        train_data_x_removed = x_train_strat[remove_columns]
+        train_data_y_removed = y_train_strat[remove_columns]
+
+        y_train_strat = y_train_strat[~remove_columns]
+        x_train_strat = x_train_strat[~remove_columns]
+
+        size_testset = x_train_strat.shape[0] * 0.1
+        nrClasses = y_train['buckets_int'].nunique()
+        if size_testset < nrClasses:
+            x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed = self.strat_split(x_train, y_train, size_testset)
+            return x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed
+        return x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed
+
+
     def get_data_split(self, handin, x_test, x_train, y_train):
         if not handin:
             if self.stratified_split:
@@ -154,36 +205,18 @@ class Regression:
                     x_train.reset_index(drop=True, inplace=True)
                     y_train.reset_index(drop=True, inplace=True)
 
-                """
-                 Remove samples for which we have only one age class, 
-                 so that we can do a stratified split
-                """
-                y_train_int = y_train.astype(int)
-                counts = y_train_int["y"].value_counts()
-                Logcreator.info("The number of samples for each 'age/class' are:\n",
-                                pd.DataFrame(counts).T)
 
-                classes_with_one_el = counts[counts == 1].index.values
-                Logcreator.info("'Age' with only one sample:", classes_with_one_el)
-
-                remove_columns = y_train_int["y"].isin(classes_with_one_el)
-
-                # Save samples/rows we remove
-                train_data_x_removed = x_train[remove_columns]
-                train_data_y_removed = y_train[remove_columns]
-
-                # Remove samples/rows
-                y_train_int = y_train_int[~remove_columns]
-                y_train = y_train[~remove_columns]
-                x_train = x_train[~remove_columns]
-
+                nrBuckets = 30
+                x_train, y_train, train_data_x_removed, train_data_y_removed = self.strat_split(x_train, y_train, nrBuckets)
                 # Do the stratified split without those samples
                 x_train_split, x_test_split, y_train_split, y_test_split = model_selection.train_test_split(
-                    x_train, y_train, stratify=y_train_int, test_size=0.1, random_state=43)
+                    x_train, y_train, stratify=y_train['buckets_int'], test_size=0.1, random_state=43)
 
                 # Append the removed samples/rows to the training split
                 x_train_split = x_train_split.append(train_data_x_removed)
                 y_train_split = y_train_split.append(train_data_y_removed)
+                y_train_split = y_train_split.drop(['buckets_int'], axis=1)
+                y_test_split = y_test_split.drop(['buckets_int'], axis=1)
 
                 # TODO maybe move this code to where we need it
                 # reset all indexes(=start from 0) because some transformers remove the index

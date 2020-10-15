@@ -130,7 +130,7 @@ class Engine:
                                     output_row.extend(list(feature_selector_data.values()))
                                     output_row.extend(list(normalizer_data.values()))
                                     output_row.extend(list(regression_data.values()))
-                                    # TODO save loop_counter in output_row, so we compare with the log
+
 
                                     results_out = results_out.append(
                                         pd.DataFrame(output_row, index=results_out.columns).T)
@@ -177,9 +177,9 @@ class Engine:
         return param_dict
 
     def train(self, x_train, y_train, x_test):
-        if True:  # TODO move to somewhere else because returning nothing results in error
-            self.search(x_train, y_train, x_test)
-            return
+        #if True:  # TODO move to somewhere else because returning nothing results in error
+        #    self.search(x_train, y_train, x_test)
+        #    return
 
         # Feature Selection (Remove features with to many nan
         feature_selector = FeatureSelector()

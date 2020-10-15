@@ -26,6 +26,7 @@ if __name__ == "__main__":
     parser.add_argument('--workingdir', default=os.getcwd(), type=str,
                         help="Working directory (default: current directory).")
     parser.add_argument('--handin', default=False, type=bool, help="If set to true, whole trainingset used for training")
+    parser.add_argument('--hyperparamsearch', default=False, type=bool, help="If set to true, will perform hyper parameter search, else it will only fit the given model")
 
     args = argumenthelper.parse_args(parser)
     start = time.time()
@@ -50,16 +51,19 @@ if __name__ == "__main__":
     Logcreator.info(x_test.head())
 
     engine = Engine()
-
-    #Train
-    regressor, x_test_split, y_test_split,x_train_split, y_train_split = engine.train(x_train=x_train, y_train=y_train, x_test=x_test)
-    #Predict
-    if not args.handin:
-        engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=y_test_split, x_test_index=None,
-                       x_train_split=x_train_split, y_train_split=y_train_split)
+    # Hyperparamter Search
+    if args.hyperparamsearch:
+        engine.search(x_train, y_train, x_test)
     else:
-        engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=None, x_test_index=x_test.index,
-                       x_train_split=x_train_split, y_train_split=y_train_split)
+        # Train
+        regressor, x_test_split, y_test_split,x_train_split, y_train_split = engine.train(x_train=x_train, y_train=y_train, x_test=x_test)
+        # Predict
+        if not args.handin:
+            engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=y_test_split, x_test_index=None,
+                           x_train_split=x_train_split, y_train_split=y_train_split)
+        else:
+            engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=None, x_test_index=x_test.index,
+                           x_train_split=x_train_split, y_train_split=y_train_split)
 
     end = time.time()
     Logcreator.info("Finished processing in %d [s]." % (end - start))

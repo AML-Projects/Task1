@@ -255,7 +255,7 @@ class Engine:
                                                                                            x_test_fs)
 
         # Normalizer
-        normalizer = Normalizer(fit_on=Configuration.get('normalizer.fit_on'))
+        normalizer = Normalizer(name=Configuration.get('normalizer.name'), fit_on=Configuration.get('normalizer.fit_on'))
         normalizer_method = Configuration.get('normalizer.name')
         switcher = {
             'stdscaler': normalizer.standard_scaler,

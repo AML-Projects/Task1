@@ -271,7 +271,8 @@ class Engine:
         switcher = {
             'ridge': regression.ridge_regression,
             'svr': regression.svr_regression,
-            'xgb': regression.xgboost_regression
+            'xgb': regression.xgboost_regression,
+            'elastic': regression.elastic_net_regression
         }
         reg = switcher.get(regression_method)
         regressor, x_test_split, y_test_split, x_train_split, y_train_split, search_results = \

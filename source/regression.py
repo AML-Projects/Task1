@@ -10,10 +10,10 @@ import math
 import pandas as pd
 import xgboost as xgb
 from sklearn import model_selection
-from sklearn.linear_model import Ridge
+from sklearn.linear_model import Ridge, ElasticNet
 from sklearn.model_selection import RepeatedStratifiedKFold
 from sklearn.svm import SVR
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 
 from logcreator.logcreator import Logcreator
@@ -29,7 +29,8 @@ class Regression:
         switcher = {
             'ridge': self.ridge_regression,
             'svr': self.svr_regression,
-            'xgb': self.xgboost_regression
+            'xgb': self.xgboost_regression,
+            'elastic': self.elastic_net_regression
         }
         reg = switcher.get(self.name)
 
@@ -102,6 +103,24 @@ class Regression:
 
         best_model, search_results = self.do_grid_search(model, nr_folds, param, x_train_split, y_train_split)
 
+        return best_model, x_test_split, y_test_split, x_train_split, y_train_split, search_results
+
+    def elastic_net_regression(self, x_train, y_train, x_test, handin):
+        x_test_split, x_train_split, y_test_split, y_train_split = self.get_data_split(handin, x_test, x_train, y_train)
+
+        nr_folds = math.floor(math.sqrt(x_train_split.shape[0]) / 3)
+
+        model = ElasticNet(random_state=43)
+
+        # grid search parameters
+        parameters = {
+            'alpha': [0.2, 0.5, 1, 10, 100],
+            'l1_ratio': [0.25, 0.5, 0.75],
+            'normalize': [False]
+        }
+        best_model, search_results = self.do_grid_search(model, nr_folds, parameters, x_train_split, y_train_split)
+
+        best_model.fit(x_train_split, y_train_split)
         return best_model, x_test_split, y_test_split, x_train_split, y_train_split, search_results
 
     def do_grid_search(self, model, nr_folds, parameters, x_train_split, y_train_split):

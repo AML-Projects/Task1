@@ -1,0 +1,68 @@
+{
+    "environment": {
+        "name" : "describe the run",
+        "output_path": "trainings",
+        "log_file" : "logs.txt"
+    },
+    "imputer": {
+        "name": "median"
+    },
+    "outliers": {
+		"name": "lof",
+		"fit_on" : "train",
+		"customOR": {
+			"method" : "iqr",
+			"threshold" : 10
+		}
+    },
+    "feature_selector": {
+		"remove_features_with_many_Nan" : "False",
+        "remove_constant_features" : "True",
+		"remove_constant_features_par": {
+			"threshold": 0.01
+		},
+        "remove_correlated_features" : "True",
+		"remove_correlated_features_par" : {
+			"threshold" : 0.8
+		},
+        "selectBestK" : "True",
+		"selectBestK_par" : {
+			"k" : 100
+		},
+        "selectBestBasedOnImpurity" : "False",
+    },
+	"normalizer": {
+		"name": "robustscaler",
+		"fit_on" : "train"
+	},
+	"regression": {
+		"name": "xgb"
+	},
+	"search": {
+	    "imputer": {
+            "name": ["median"],
+	    },
+	    "outlier": {
+            "fit_on": ["train", "test"],
+	        "name": ["customOR", "lof"],
+	        "strategy":["iqr"],
+	        "threshold": [6.5],
+	    },
+	    "feature_selector": {
+	        "k" : [100, 80],
+	        "remove_constant": ["True"],
+	        "remove_constant_threshold": [0.01],
+            "remove_correlated":["True"],
+            "remove_correlated_threshold":[0.8],
+            "use_select_best_based_on_impurity" : ["True", "False"],
+            "use_select_best_k" : ["True", "False"],
+	    },
+        "normalizer": {
+            "fit_on": ["train", "test"],
+            "name" : ["robustscaler"]
+        },
+        "regression":{
+            "name":["xgb"]
+        }
+	}
+}

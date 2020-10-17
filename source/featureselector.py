@@ -187,7 +187,6 @@ class FeatureSelector:
         correlated_features = set()
         correlation_matrix = pd.DataFrame(x_train).corr()
 
-        self.correlation_threshold = 0.8
 
         for i in range(len(correlation_matrix.columns)):
             for j in range(i):

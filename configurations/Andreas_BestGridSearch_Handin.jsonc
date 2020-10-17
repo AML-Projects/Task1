@@ -30,7 +30,7 @@
 		},
         "selectBestK" : "True",
 		"selectBestK_par" : {
-			"k" : 200
+			"k" : 400
 		},
         "selectBestBasedOnImpurity" : "False",
     },

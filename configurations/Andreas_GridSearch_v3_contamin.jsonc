@@ -5,10 +5,13 @@
         "log_file" : "logs.txt"
     },
     "imputer": {
-        "name": "median"
+        "name": "median",
+		"knn_weights" : "distance",
+		"knn_n_neighbors" : 20
     },
     "outliers": {
 		"name": "lof",
+		"contamination":"auto",
 		"fit_on" : "train",
 		"customOR": {
 			"method" : "iqr",
@@ -19,21 +22,21 @@
 		"remove_features_with_many_Nan" : "False",
         "remove_constant_features" : "True",
 		"remove_constant_features_par": {
-			"threshold": 0.01
+			"threshold": 0.02
 		},
         "remove_correlated_features" : "True",
 		"remove_correlated_features_par" : {
-			"threshold" : 0.8
+			"threshold" : 0.75
 		},
         "selectBestK" : "True",
 		"selectBestK_par" : {
-			"k" : 200
+			"k" : 100
 		},
         "selectBestBasedOnImpurity" : "False",
     },
 	"normalizer": {
 		"name": "robustscaler",
-		"fit_on" : "train"
+		"fit_on" : "both"
 	},
 	"regression": {
 		"name": "xgb"
@@ -46,17 +49,18 @@
             "name": ["median"],
 	    },
 	    "outlier": {
+			"contamination":[0.05, 0.1, 0.15, 0.2],
             "fit_on": ["train"],
 	        "name": ["lof"],
 	        "strategy":["iqr"],
 	        "threshold": [3],
 	    },
 	    "feature_selector": {
-	        "k" : [80, 100, 200, 400],
+	        "k" : [100],
 	        "remove_constant": ["True"],
-	        "remove_constant_threshold": [0.01, 0.02],
+	        "remove_constant_threshold": [0.01],
             "remove_correlated":["True"],
-            "remove_correlated_threshold":[0.75, 0.8, 0.85],
+            "remove_correlated_threshold":[0.8],
             "use_select_best_based_on_impurity" : ["False"],
             "use_select_best_k" : ["True"],
 	    },

@@ -92,7 +92,7 @@ class CustomOutlierRemover:
 
 
 class Outliers:
-    def __init__(self, name='lof', strategy='z_score', threshold=0.0, fit_on='train'):
+    def __init__(self, name, strategy, threshold, fit_on):
         self.name = name
         self.strategy = strategy
         self.threshold = threshold
@@ -115,28 +115,28 @@ class Outliers:
         x_test = pd.DataFrame(x_test)
         return x_train, y_train, x_test
 
-    def remove_outliers(self, ifo, x_train, y_train, x_test):
+    def remove_outliers(self, remover, x_train, y_train, x_test):
         x_train, y_train, x_test = self.to_DataFrame(x_train, y_train, x_test)
         if self.fit_on == 'test':
-            ifo.novelty = True
-            ifo = ifo.fit(x_test)
+            remover.novelty = True
+            remover = remover.fit(x_test)
             # predict always on train
-            outliers = ifo.predict(x_train)
+            outliers = remover.predict(x_train)
 
         elif self.fit_on == 'both':
-            ifo.novelty = True
-            ifo = ifo.fit(x_train.append(x_test))
+            remover.novelty = True
+            remover = remover.fit(x_train.append(x_test))
             # predict always on train
-            outliers = ifo.predict(x_train)
+            outliers = remover.predict(x_train)
 
         else:
-            outliers = ifo.fit_predict(x_train)
+            outliers = remover.fit_predict(x_train)
 
         mask = outliers != -1
         x_train_outl, y_train_outl = x_train[mask], y_train[mask]
         Logcreator.info("Nr. of outliers removed: {}".format(x_train.shape[0] - x_train_outl.shape[0]))
 
-        return x_train_outl, y_train_outl, x_test
+        return x_train_outl.to_numpy(), y_train_outl.to_numpy(), x_test.to_numpy()
 
     def LOF(self, x_train, y_train, x_test):
         lof = LocalOutlierFactor(contamination='auto')

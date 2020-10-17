@@ -287,16 +287,21 @@ class Engine:
         predicted_values = regressor.predict(x_train_split)
         score = r2_score(y_true=y_train_split, y_pred=predicted_values)
 
-        self.plot_true_vs_predicted(y_train_split, predicted_values, title="y-train vs. y-train-predicted",
+        self.plot_true_vs_predicted(y_train_split, predicted_values,
+                                    title="y-train vs. y-train-predicted",
                                     file="train.jpg")
+
         Logcreator.info("R2 Score achieved on training set: {}".format(score))
 
         if y_test_split is not None:
             predicted_values = regressor.predict(x_test_split)
             score = r2_score(y_true=y_test_split, y_pred=predicted_values)
-            Logcreator.info("R2 Score achieved on test set: {}".format(score))
-            self.plot_true_vs_predicted(y_test_split, predicted_values, title="y-test vs. y-test-predicted",
+
+            self.plot_true_vs_predicted(y_test_split.values.flatten(), predicted_values,
+                                        title="y-test vs. y-test-predicted",
                                         file="test.jpg")
+
+            Logcreator.info("R2 Score achieved on test set: {}".format(score))
 
         else:
             predicted_values = regressor.predict(x_test_split)
@@ -315,7 +320,7 @@ class Engine:
         fig = plt.figure(figsize=(16, 9), dpi=300)
         fig.suptitle(title)
 
-        plt.scatter(x_index, y_values_vs_predicted[0], s=1)
-        plt.scatter(x_index, y_values_vs_predicted[1], s=1)
+        plt.scatter(x_index, y_values_vs_predicted[0], s=2)
+        plt.scatter(x_index, y_values_vs_predicted[1], s=2)
         fig.savefig(os.path.join(Configuration.output_directory, file))
         plt.show()

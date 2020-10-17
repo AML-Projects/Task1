@@ -16,7 +16,7 @@ from logcreator.logcreator import Logcreator
 
 
 class Imputer(BaseEstimator, TransformerMixin):
-    def __init__(self, name='median', knn_weights='distance', knn_n_neighbors=20, iterative_n_nearest_features=10):
+    def __init__(self, name, knn_weights, knn_n_neighbors, iterative_n_nearest_features):
         Logcreator.info("Imputer initialized")
         self.name = name
         self.knn_weights = knn_weights

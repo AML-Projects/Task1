@@ -25,7 +25,7 @@ class Regression:
         self.name = name
         self.stratified_split = stratified_split
 
-    def fit_predict(self, x_train, y_train, x_test):
+    def fit_predict(self, x_train, y_train, x_test, handin=False):
         switcher = {
             'ridge': self.ridge_regression,
             'svr': self.svr_regression,
@@ -34,7 +34,7 @@ class Regression:
         }
         reg = switcher.get(self.name)
 
-        return reg(x_train, y_train, x_test, False)
+        return reg(x_train, y_train, x_test, handin)
 
     def ridge_regression(self, x_train, y_train, x_test, handin):
         x_test_split, x_train_split, y_test_split, y_train_split = self.get_data_split(handin, x_test, x_train, y_train)
@@ -171,7 +171,8 @@ class Regression:
 
         bucketLabels = [a for a in range(nrOfBuckets)]
         try:
-            y_train_strat['buckets'] = pd.qcut(y_train['y'], q=nrOfBuckets, labels=bucketLabels)
+            #y_train_strat = y_train_strat.rename(columns={0: 'y'})
+            y_train_strat['buckets'] = pd.qcut(y_train[0], q=nrOfBuckets, labels=bucketLabels)
 
             Logcreator.info("Nr of buckets for stratified split: " + str(nrOfBuckets))
         except ValueError:

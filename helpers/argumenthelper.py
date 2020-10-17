@@ -13,6 +13,11 @@ def get_args():
     """
     return args
 
+def boolean_string(s):
+    s = s.lower()
+    if s not in {'false', 'true'}:
+        raise ValueError('Not a valid boolean string')
+    return s == 'true'
 
 def parse_args(parser):
     """

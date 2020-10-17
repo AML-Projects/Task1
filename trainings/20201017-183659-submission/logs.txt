@@ -1,0 +1,121 @@
+20201017-183659	Task 01 - Regression
+20201017-183659	Info: Environment: describe the run
+20201017-183659	Info: Shape of training_samples: (1212, 832)
+20201017-183659	Info:             x0             x1  ...           x830           x831
+id                             ...                              
+0.0  10.891876  832442.812375  ...   85338.558539  103088.664210
+1.0  11.512994  832442.898114  ...   95695.020645  105161.109422
+2.0  11.052185  832442.896307  ...   80253.299882  104177.051666
+3.0  11.642076            NaN  ...            NaN  102746.516920
+4.0  10.407121  832442.831424  ...  101815.745499  105163.749149
+
+[5 rows x 832 columns]
+20201017-183659	Info: Shape of training labels: (1212, 1)
+20201017-183659	Info:         y
+id       
+0.0  71.0
+1.0  73.0
+2.0  66.0
+3.0  55.0
+4.0  67.0
+20201017-183700	Info: Shape of test samples: (776, 832)
+20201017-183700	Info:             x0             x1  ...           x830           x831
+id                             ...                              
+0.0   9.101943  832442.839400  ...            NaN  106668.615874
+1.0  11.722077  832442.826314  ...  100761.264268            NaN
+2.0  11.200277  832442.820359  ...  106440.456728  103405.273232
+3.0   9.668873  832442.820901  ...            NaN  100531.960204
+4.0  10.329962  832442.871842  ...  109797.625066  104849.648797
+
+[5 rows x 832 columns]
+20201017-183700	Info: Training initialized
+20201017-183700	Info: Feature Selection
+20201017-183700	Info: Imputer initialized
+20201017-183700	Info: Imputation result with median imputation for x_train: 
+
+20201017-183700	Info:          0              1    ...            830            831
+0  10.891876  832442.812375  ...   85338.558539  103088.664210
+1  11.512994  832442.898114  ...   95695.020645  105161.109422
+2  11.052185  832442.896307  ...   80253.299882  104177.051666
+3  11.642076  832442.860041  ...   99802.127899  102746.516920
+4  10.407121  832442.831424  ...  101815.745499  105163.749149
+
+[5 rows x 832 columns]
+20201017-183700	Info: Imputation result with median imputation for x_test: 
+
+20201017-183700	Info:          0              1    ...            830            831
+0   9.101943  832442.839400  ...   99802.127899  106668.615874
+1  11.722077  832442.826314  ...  100761.264268  104846.235709
+2  11.200277  832442.820359  ...  106440.456728  103405.273232
+3   9.668873  832442.820901  ...   99802.127899  100531.960204
+4  10.329962  832442.871842  ...  109797.625066  104849.648797
+
+[5 rows x 832 columns]
+20201017-183700	Info: Start outlier detection
+20201017-183700	Info: Nr. of outliers removed: 50
+20201017-183700	Info: Feature Selection
+20201017-183700	Info: 
+Remove constant features:
+20201017-183700	Info: Following columns are constant: [193, 297, 339, 629]
+20201017-183700	Info: Variance Threshold  0.0  -> nr of features:  828
+20201017-183700	Info: Removed: 4 features
+20201017-183700	Info: 
+Remove constant features:
+20201017-183700	Info: Following columns are constant: [1, 2, 6, 9, 16, 34, 50, 78, 82, 83, 145, 153, 166, 194, 205, 231, 255, 262, 265, 268, 315, 333, 360, 361, 371, 375, 376, 396, 419, 446, 451, 477, 478, 497, 502, 524, 583, 585, 606, 624, 635, 641, 660, 675, 680, 696, 715, 717, 725, 731, 743, 751, 758, 774, 807]
+20201017-183700	Info: Variance Threshold  0.01  -> nr of features:  773
+20201017-183700	Info: Removed: 55 features
+20201017-183700	Info: 
+Remove Correlated Features:
+20201017-183707	Info: Following features are removed: {256, 130, 386, 643, 764, 520, 137, 521, 765, 268, 270, 271, 527, 407, 665, 539, 156, 542, 415, 671, 424, 682, 684, 558, 305, 179, 691, 183, 567, 443, 573, 318, 701, 449, 450, 67, 452, 705, 462, 208, 83, 467, 598, 217, 602, 91, 347, 734, 223, 224, 354, 615, 745, 622, 369, 497, 498, 244, 760, 761, 380, 637, 254}
+20201017-183707	Info: Nr. of features remvoed: 63
+20201017-183707	Info: Correlation Threshold  0.8  -> nr of features:  710
+20201017-183707	Info: 
+Select Best k features:
+20201017-183714	Info: SelectKBest k = 80  -> nr features:  80
+20201017-183714	Info: Start normalizer
+20201017-183714	Info: Start fit model
+20201017-183714	Info: x_train_split: (1162, 80)
+20201017-183714	Info: x_test_split: (776, 80)
+20201017-183814	Info: Best estimator from GridSearch: XGBRegressor(base_score=0.5, booster='gbtree', colsample_bylevel=1,
+             colsample_bynode=1, colsample_bytree=1, eta=0.08, gamma=0,
+             gpu_id=-1, importance_type='gain', interaction_constraints='',
+             learning_rate=0.0799999982, max_delta_step=0, max_depth=6,
+             min_child_weight=3, missing=nan, monotone_constraints='()',
+             n_estimators=100, n_jobs=0, num_parallel_tree=1, random_state=41,
+             reg_alpha=0, reg_lambda=1, scale_pos_weight=1, subsample=0.8,
+             tree_method='exact', validate_parameters=1, verbosity=None)
+20201017-183814	Info: Best alpha found: {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 6, 'min_child_weight': 3, 'objective': 'reg:squarederror', 'subsample': 0.8}
+20201017-183814	Info: Best training-score with mse loss: 0.6120154319754468
+20201017-183814	Info:                                                                                                                           params  mean_test_score  std_test_score  mean_train_score  std_train_score
+51  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 6, 'min_child_weight': 3, 'objective': 'reg:squarederror', 'subsample': 0.8}         0.612015        0.053799          0.979073         0.001773
+46  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 6, 'min_child_weight': 1, 'objective': 'reg:squarederror', 'subsample': 0.9}         0.610583        0.053397          0.982046         0.001416
+49  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 6, 'min_child_weight': 2, 'objective': 'reg:squarederror', 'subsample': 0.9}         0.610319        0.044421          0.981425         0.001374
+48  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 6, 'min_child_weight': 2, 'objective': 'reg:squarederror', 'subsample': 0.8}         0.610268        0.047506          0.980362         0.001362
+53  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 6, 'min_child_weight': 3, 'objective': 'reg:squarederror', 'subsample': 1.0}         0.609519        0.062742          0.979473         0.002190
+18   {'booster': 'gbtree', 'eta': 0.1, 'max_depth': 6, 'min_child_weight': 1, 'objective': 'reg:squarederror', 'subsample': 0.8}         0.607357        0.060115          0.990462         0.000625
+22   {'booster': 'gbtree', 'eta': 0.1, 'max_depth': 6, 'min_child_weight': 2, 'objective': 'reg:squarederror', 'subsample': 0.9}         0.605965        0.056605          0.991375         0.000767
+52  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 6, 'min_child_weight': 3, 'objective': 'reg:squarederror', 'subsample': 0.9}         0.604142        0.058459          0.980558         0.001532
+50  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 6, 'min_child_weight': 2, 'objective': 'reg:squarederror', 'subsample': 1.0}         0.603679        0.057934          0.980240         0.001590
+40  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 4, 'min_child_weight': 2, 'objective': 'reg:squarederror', 'subsample': 0.9}         0.603604        0.054060          0.913478         0.003524
+36  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 4, 'min_child_weight': 1, 'objective': 'reg:squarederror', 'subsample': 0.8}         0.603384        0.050687          0.911215         0.002548
+47  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 6, 'min_child_weight': 1, 'objective': 'reg:squarederror', 'subsample': 1.0}         0.602975        0.058140          0.980285         0.001900
+21   {'booster': 'gbtree', 'eta': 0.1, 'max_depth': 6, 'min_child_weight': 2, 'objective': 'reg:squarederror', 'subsample': 0.8}         0.602735        0.056227          0.990356         0.000874
+26   {'booster': 'gbtree', 'eta': 0.1, 'max_depth': 6, 'min_child_weight': 3, 'objective': 'reg:squarederror', 'subsample': 1.0}         0.602036        0.060224          0.989689         0.001384
+41  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 4, 'min_child_weight': 2, 'objective': 'reg:squarederror', 'subsample': 1.0}         0.601988        0.055795          0.907009         0.003680
+24   {'booster': 'gbtree', 'eta': 0.1, 'max_depth': 6, 'min_child_weight': 3, 'objective': 'reg:squarederror', 'subsample': 0.8}         0.601706        0.056398          0.989688         0.001136
+39  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 4, 'min_child_weight': 2, 'objective': 'reg:squarederror', 'subsample': 0.8}         0.600960        0.056458          0.909754         0.003425
+37  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 4, 'min_child_weight': 1, 'objective': 'reg:squarederror', 'subsample': 0.9}         0.600925        0.050653          0.913302         0.002134
+44  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 4, 'min_child_weight': 3, 'objective': 'reg:squarederror', 'subsample': 1.0}         0.600615        0.047837          0.906010         0.002620
+14   {'booster': 'gbtree', 'eta': 0.1, 'max_depth': 4, 'min_child_weight': 2, 'objective': 'reg:squarederror', 'subsample': 1.0}         0.599985        0.061296          0.931838         0.002159
+17   {'booster': 'gbtree', 'eta': 0.1, 'max_depth': 4, 'min_child_weight': 3, 'objective': 'reg:squarederror', 'subsample': 1.0}         0.599955        0.051320          0.929200         0.002334
+45  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 6, 'min_child_weight': 1, 'objective': 'reg:squarederror', 'subsample': 0.8}         0.599772        0.060565          0.980767         0.000996
+42  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 4, 'min_child_weight': 3, 'objective': 'reg:squarederror', 'subsample': 0.8}         0.598658        0.054690          0.908966         0.002482
+9    {'booster': 'gbtree', 'eta': 0.1, 'max_depth': 4, 'min_child_weight': 1, 'objective': 'reg:squarederror', 'subsample': 0.8}         0.598228        0.046414          0.935623         0.002476
+19   {'booster': 'gbtree', 'eta': 0.1, 'max_depth': 6, 'min_child_weight': 1, 'objective': 'reg:squarederror', 'subsample': 0.9}         0.598141        0.053398          0.991928         0.000731
+38  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 4, 'min_child_weight': 1, 'objective': 'reg:squarederror', 'subsample': 1.0}         0.598117        0.056122          0.908876         0.002689
+43  {'booster': 'gbtree', 'eta': 0.08, 'max_depth': 4, 'min_child_weight': 3, 'objective': 'reg:squarederror', 'subsample': 0.9}         0.597648        0.056023          0.910539         0.002408
+12   {'booster': 'gbtree', 'eta': 0.1, 'max_depth': 4, 'min_child_weight': 2, 'objective': 'reg:squarederror', 'subsample': 0.8}         0.597593        0.059564          0.933998         0.002311
+16   {'booster': 'gbtree', 'eta': 0.1, 'max_depth': 4, 'min_child_weight': 3, 'objective': 'reg:squarederror', 'subsample': 0.9}         0.596849        0.054778          0.934583         0.001896
+25   {'booster': 'gbtree', 'eta': 0.1, 'max_depth': 6, 'min_child_weight': 3, 'objective': 'reg:squarederror', 'subsample': 0.9}         0.594099        0.057176          0.990701         0.000967
+20201017-183817	Info: R2 Score achieved on training set: 0.9763973923836381
+20201017-183817	Info: Finished processing in 77 [s].

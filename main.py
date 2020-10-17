@@ -25,8 +25,8 @@ if __name__ == "__main__":
                         type=str, help="Environment and training configuration.")
     parser.add_argument('--workingdir', default=os.getcwd(), type=str,
                         help="Working directory (default: current directory).")
-    parser.add_argument('--handin', default=False, type=bool, help="If set to true, whole trainingset used for training")
-    parser.add_argument('--hyperparamsearch', default=False, type=bool, help="If set to true, will perform hyper parameter search, else it will only fit the given model")
+    parser.add_argument('--handin', default=False, type=argumenthelper.boolean_string, help="If set to true, whole trainingset used for training")
+    parser.add_argument('--hyperparamsearch', default=False, type=argumenthelper.boolean_string, help="If set to true, will perform hyper parameter search, else it will only fit the given model")
 
     args = argumenthelper.parse_args(parser)
     start = time.time()
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         engine.search(x_train, y_train, x_test)
     else:
         # Train
-        regressor, x_test_split, y_test_split,x_train_split, y_train_split = engine.train(x_train=x_train, y_train=y_train, x_test=x_test)
+        regressor, x_test_split, y_test_split, x_train_split, y_train_split, search_results = engine.train(x_train=x_train, y_train=y_train, x_test=x_test)
         # Predict
         if not args.handin:
             engine.predict(regressor=regressor, x_test_split=x_test_split, y_test_split=y_test_split, x_test_index=None,

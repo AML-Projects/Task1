@@ -171,7 +171,8 @@ class Regression:
 
         bucketLabels = [a for a in range(nrOfBuckets)]
         try:
-            y_train_strat['buckets'] = pd.qcut(y_train['y'], q=nrOfBuckets, labels=bucketLabels)
+            #y_train_strat = y_train_strat.rename(columns={0: 'y'})
+            y_train_strat['buckets'] = pd.qcut(y_train[0], q=nrOfBuckets, labels=bucketLabels)
 
             Logcreator.info("Nr of buckets for stratified split: " + str(nrOfBuckets))
         except ValueError:

@@ -9,6 +9,7 @@ import pandas as pd
 from sklearn.base import TransformerMixin
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_info_regression, SelectFromModel
+import numpy as np
 
 from logcreator.logcreator import Logcreator
 
@@ -43,13 +44,13 @@ class FeatureSelector:
     Partly based on # https://stackabuse.com/applying-filter-methods-in-python-for-feature-selection/
     """
 
-    def __init__(self, remove_constant=True,
-                 remove_constant_threshold=0.01,
-                 remove_correlated=True,
-                 remove_correlated_threshold=0.8,
-                 use_select_best_k=True,
-                 k=200,
-                 use_select_best_based_on_impurity=False,
+    def __init__(self, remove_constant,
+                 remove_constant_threshold,
+                 remove_correlated,
+                 remove_correlated_threshold,
+                 use_select_best_k,
+                 k,
+                 use_select_best_based_on_impurity,
                  ):
         Logcreator.info("Feature Selection")
 
@@ -133,7 +134,7 @@ class FeatureSelector:
 
         constant_filter = VarianceThreshold(threshold=threshold)
 
-        constant_filter.fit(x_train, y_train)
+        constant_filter.fit(x_train)
 
         constant_columns = [column for column in x_train.columns
                             if column not in x_train.columns[constant_filter.get_support()]]

@@ -12,7 +12,7 @@ from logcreator.logcreator import Logcreator
 
 
 class Normalizer:
-    def __init__(self, name='stdscaler', fit_on='train'):
+    def __init__(self, name, fit_on):
         self.name = name
         self.fit_on = fit_on
         Logcreator.info("Start normalizer")

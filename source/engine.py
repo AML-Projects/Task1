@@ -19,7 +19,7 @@ from source.imputers import Imputer
 from source.normalizer import Normalizer
 from source.outliers import Outliers
 from source.regression import Regression
-
+import matplotlib.pyplot as plt
 
 class Engine:
     def __init__(self):
@@ -286,14 +286,36 @@ class Engine:
     def predict(self, regressor, x_test_split, y_test_split, x_test_index, x_train_split, y_train_split):
         predicted_values = regressor.predict(x_train_split)
         score = r2_score(y_true=y_train_split, y_pred=predicted_values)
+
+        self.plot_true_vs_predicted(y_train_split, predicted_values, title="y-train vs. y-train-predicted",
+                                    file="train.jpg")
         Logcreator.info("R2 Score achieved on training set: {}".format(score))
 
         if y_test_split is not None:
             predicted_values = regressor.predict(x_test_split)
             score = r2_score(y_true=y_test_split, y_pred=predicted_values)
             Logcreator.info("R2 Score achieved on test set: {}".format(score))
+            self.plot_true_vs_predicted(y_train_split, predicted_values, title="y-test vs. y-test-predicted",
+                                        file="test.jpg")
+
         else:
             predicted_values = regressor.predict(x_test_split)
             output_csv = pd.concat([pd.Series(x_test_index.values), pd.Series(predicted_values.flatten())], axis=1)
             output_csv.columns = ["id", "y"]
             pd.DataFrame.to_csv(output_csv, os.path.join(Configuration.output_directory, 'submit.csv'), index=False)
+
+    def plot_true_vs_predicted(self, y_true, y_predicted, title, file):
+        """
+        Plotting true vs predicted y values, ordered by the true values.
+        """
+        y_values_vs_predicted = pd.DataFrame([y_true, y_predicted]).T
+        y_values_vs_predicted.sort_values(by=0, inplace=True, axis=0)
+
+        x_index = range(0, y_values_vs_predicted.shape[0])
+        fig = plt.figure(figsize=(16, 9), dpi=300)
+        fig.suptitle(title)
+
+        plt.scatter(x_index, y_values_vs_predicted[0], s=1)
+        plt.scatter(x_index, y_values_vs_predicted[1], s=1)
+        fig.savefig(os.path.join(Configuration.output_directory, file))
+        plt.show()

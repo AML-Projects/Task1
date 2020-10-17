@@ -1,0 +1,92 @@
+20201017-133349	Task 01 - Regression
+20201017-133349	Info: Environment: describe the run
+20201017-133349	Info: Shape of training_samples: (1212, 832)
+20201017-133349	Info:             x0             x1  ...           x830           x831
+id                             ...                              
+0.0  10.891876  832442.812375  ...   85338.558539  103088.664210
+1.0  11.512994  832442.898114  ...   95695.020645  105161.109422
+2.0  11.052185  832442.896307  ...   80253.299882  104177.051666
+3.0  11.642076            NaN  ...            NaN  102746.516920
+4.0  10.407121  832442.831424  ...  101815.745499  105163.749149
+
+[5 rows x 832 columns]
+20201017-133349	Info: Shape of training labels: (1212, 1)
+20201017-133349	Info:         y
+id       
+0.0  71.0
+1.0  73.0
+2.0  66.0
+3.0  55.0
+4.0  67.0
+20201017-133349	Info: Shape of test samples: (776, 832)
+20201017-133349	Info:             x0             x1  ...           x830           x831
+id                             ...                              
+0.0   9.101943  832442.839400  ...            NaN  106668.615874
+1.0  11.722077  832442.826314  ...  100761.264268            NaN
+2.0  11.200277  832442.820359  ...  106440.456728  103405.273232
+3.0   9.668873  832442.820901  ...            NaN  100531.960204
+4.0  10.329962  832442.871842  ...  109797.625066  104849.648797
+
+[5 rows x 832 columns]
+20201017-133349	Info: Training initialized
+20201017-133349	Info: Feature Selection
+20201017-133349	Info: Imputer initialized
+20201017-133350	Info: Imputation result with median imputation for x_train: 
+
+20201017-133350	Info:          0              1    ...            830            831
+0  10.891876  832442.812375  ...   85338.558539  103088.664210
+1  11.512994  832442.898114  ...   95695.020645  105161.109422
+2  11.052185  832442.896307  ...   80253.299882  104177.051666
+3  11.642076  832442.860041  ...   99802.127899  102746.516920
+4  10.407121  832442.831424  ...  101815.745499  105163.749149
+
+[5 rows x 832 columns]
+20201017-133350	Info: Imputation result with median imputation for x_test: 
+
+20201017-133350	Info:          0              1    ...            830            831
+0   9.101943  832442.839400  ...   99802.127899  106668.615874
+1  11.722077  832442.826314  ...  100761.264268  104846.235709
+2  11.200277  832442.820359  ...  106440.456728  103405.273232
+3   9.668873  832442.820901  ...   99802.127899  100531.960204
+4  10.329962  832442.871842  ...  109797.625066  104849.648797
+
+[5 rows x 832 columns]
+20201017-133350	Info: Start outlier detection
+20201017-133350	Info: Nr. of outliers removed: 50
+20201017-133350	Info: Feature Selection
+20201017-133350	Info: 
+Remove constant features:
+20201017-133350	Info: Following columns are constant: [193, 297, 339, 629]
+20201017-133350	Info: Variance Threshold  0.0  -> nr of features:  828
+20201017-133350	Info: Removed: 4 features
+20201017-133350	Info: 
+Remove constant features:
+20201017-133350	Info: Following columns are constant: [1, 2, 6, 9, 16, 34, 50, 78, 82, 83, 145, 153, 166, 194, 205, 231, 255, 262, 265, 268, 315, 333, 360, 361, 371, 375, 376, 396, 419, 446, 451, 477, 478, 497, 502, 524, 583, 585, 606, 624, 635, 641, 660, 675, 680, 696, 715, 717, 725, 731, 743, 751, 758, 774, 807]
+20201017-133350	Info: Variance Threshold  0.01  -> nr of features:  773
+20201017-133350	Info: Removed: 55 features
+20201017-133350	Info: 
+Remove Correlated Features:
+20201017-133356	Info: Following features are removed: {256, 130, 386, 643, 764, 520, 137, 521, 765, 268, 270, 271, 527, 407, 665, 539, 156, 542, 415, 671, 424, 682, 684, 558, 305, 179, 691, 183, 567, 443, 573, 318, 701, 449, 450, 67, 452, 705, 462, 208, 83, 467, 598, 217, 602, 91, 347, 734, 223, 224, 354, 615, 745, 622, 369, 497, 498, 244, 760, 761, 380, 637, 254}
+20201017-133356	Info: Nr. of features remvoed: 63
+20201017-133356	Info: Correlation Threshold  0.8  -> nr of features:  710
+20201017-133356	Info: 
+Select Best k features:
+20201017-133403	Info: SelectKBest k = 100  -> nr features:  100
+20201017-133403	Info: Start normalizer
+20201017-133403	Info: Start fit model
+20201017-133403	Info: x_train_split: (1162, 100)
+20201017-133403	Info: x_test_split: (776, 100)
+20201017-133406	Info: Best estimator from GridSearch: XGBRegressor(base_score=0.5, booster='gbtree', colsample_bylevel=1,
+             colsample_bynode=1, colsample_bytree=1, eta=0.09, gamma=0,
+             gpu_id=-1, importance_type='gain', interaction_constraints='',
+             learning_rate=0.0900000036, max_delta_step=0, max_depth=4,
+             min_child_weight=3, missing=nan, monotone_constraints='()',
+             n_estimators=100, n_jobs=0, num_parallel_tree=1, random_state=41,
+             reg_alpha=0, reg_lambda=1, scale_pos_weight=1, subsample=0.9,
+             tree_method='exact', validate_parameters=1, verbosity=None)
+20201017-133406	Info: Best alpha found: {'eta': 0.09, 'max_depth': 4, 'min_child_weight': 3, 'subsample': 0.9}
+20201017-133406	Info: Best training-score with mse loss: 0.5968846393012832
+20201017-133406	Info:                                                                    params  mean_test_score  std_test_score  mean_train_score  std_train_score
+0  {'eta': 0.09, 'max_depth': 4, 'min_child_weight': 3, 'subsample': 0.9}         0.596885        0.060467          0.926803         0.003826
+20201017-133409	Info: R2 Score achieved on training set: 0.9167048712388308
+20201017-133409	Info: Finished processing in 20 [s].

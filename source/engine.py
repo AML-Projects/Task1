@@ -208,8 +208,7 @@ class Engine:
         x_train_norm, y_train_norm, x_test_norm = normalizer.transform_custom(x_train=x_train_feat, y_train=y_train_feat, x_test=x_test_feat)
 
         # Regression
-        regression = Regression(name=Configuration.get('regression.name'),
-                                stratified_split=Configuration.get('regression.stratified_split'))
+        regression = Regression(name=Configuration.get('regression.name'))
         regressor, x_test_split, y_test_split, x_train_split, y_train_split, search_results = regression.fit_predict(x_train=x_train_norm, y_train=y_train_norm, x_test=x_test_norm, handin=argumenthelper.get_args().handin)
 
         return regressor, x_test_split, y_test_split, x_train_split, y_train_split, search_results

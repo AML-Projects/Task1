@@ -7,9 +7,12 @@ __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, sleonardo@stu
 
 import pandas as pd
 from sklearn.base import TransformerMixin
+from sklearn.decomposition import PCA
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_info_regression, SelectFromModel
 import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import RobustScaler
 
 from logcreator.logcreator import Logcreator
 
@@ -51,6 +54,7 @@ class FeatureSelector:
                  use_select_best_k,
                  k,
                  use_select_best_based_on_impurity,
+                 pca_explained_var_threshold=0.99  # explained_var between 0 and 1
                  ):
         Logcreator.info("Feature Selection")
 
@@ -63,6 +67,7 @@ class FeatureSelector:
         if isinstance(use_select_best_based_on_impurity, str):
             use_select_best_based_on_impurity = use_select_best_based_on_impurity == "True"
 
+        self.pca_explained_var_threshold = pca_explained_var_threshold
         self.remove_constant = remove_constant
         self.constant_features_threshold = remove_constant_threshold
         self.remove_correlated = remove_correlated
@@ -94,6 +99,10 @@ class FeatureSelector:
             x_train, y_train, x_test = self.remove_correlated_features(x_train,
                                                                        y_train,
                                                                        x_test)
+        fs_do_pca = False
+        if fs_do_pca:
+            # gives very bad results
+            x_train, y_train, x_test = self.selectTransformWithPCA(x_train, y_train, x_test)
 
         if self.use_select_best_k:
             x_train, y_train, x_test = self.selectBestK(x_train,
@@ -233,3 +242,33 @@ class FeatureSelector:
         Logcreator.info("TreeBasedFeatureSelector", " -> nr features: ", str(x_train_best.shape[1]))
 
         return x_train_best, y_train, x_test_best
+
+    def selectTransformWithPCA(self, x_train, y_train, x_test):
+        Logcreator.info("\nSelect based on PCA:")
+        # we have to scale the data first
+        # https://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
+        rs = RobustScaler()
+        x_train = rs.fit_transform(x_train)
+        x_test = rs.transform(x_test)
+
+        pca = PCA(n_components=self.pca_explained_var_threshold, svd_solver='auto')
+        x_train_pca = pca.fit_transform(x_train)
+        x_test_pca = pca.transform(x_test)
+
+        explained_variance = pca.explained_variance_ratio_
+        # print("PCA explained variance", explained_variance)
+
+        nr_components = 2
+        principal_components = np.transpose(x_train_pca)
+        for i in range(0, nr_components):
+            fig, ax = plt.subplots()
+            ax.scatter(principal_components[i], y_train)
+            ax.set(xlabel='pc' + str(i + 1), ylabel='age', title='principle component ' + str(i + 1) + ' vs age')
+            ax.grid()
+            plt.show()
+
+        Logcreator.info("PCA removed: " + str(x_train.shape[1] - x_train_pca.shape[1]) + " features")
+
+        Logcreator.info("PCA ", " -> nr of features: ", x_train_pca.shape[1])
+
+        return x_train_pca, y_train, x_test_pca

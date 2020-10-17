@@ -92,11 +92,12 @@ class CustomOutlierRemover:
 
 
 class Outliers:
-    def __init__(self, name, strategy, threshold, fit_on):
+    def __init__(self, name, strategy, threshold, fit_on, contamination):
         self.name = name
         self.strategy = strategy
         self.threshold = threshold
         self.fit_on = fit_on
+        self.contamination = contamination
         Logcreator.info("Start outlier detection")
 
     def transform_custom(self, x_train, y_train, x_test):
@@ -139,12 +140,12 @@ class Outliers:
         return x_train_outl.to_numpy(), y_train_outl.to_numpy(), x_test.to_numpy()
 
     def LOF(self, x_train, y_train, x_test):
-        lof = LocalOutlierFactor(contamination='auto')
+        lof = LocalOutlierFactor(contamination=self.contamination)
 
         return self.remove_outliers(lof, x_train, y_train, x_test)
 
     def iForest(self, x_train, y_train, x_test):
-        ifo = IsolationForest(contamination='auto', random_state=41)
+        ifo = IsolationForest(self.contamination, random_state=41)
 
         return self.remove_outliers(ifo, x_train, y_train, x_test)
 

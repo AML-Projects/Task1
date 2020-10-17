@@ -188,7 +188,8 @@ class Engine:
         outliers = Outliers(strategy=Configuration.get('outliers.customOR.method'),
                             threshold=Configuration.get('outliers.customOR.threshold'),
                             fit_on=Configuration.get('outliers.fit_on'),
-                            name=Configuration.get('outliers.name'))
+                            name=Configuration.get('outliers.name'),
+                            contamination=Configuration.get('outliers.contamination'))
         x_train_outl, y_train_outl, x_test_outl = outliers.transform_custom(x_train=x_train_imp, y_train=y_train_imp, x_test=x_test_imp)
 
         # Feature selection

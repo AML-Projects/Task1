@@ -171,28 +171,24 @@ class Regression:
 
         bucketLabels = [a for a in range(nrOfBuckets)]
         try:
-            #y_train_strat = y_train_strat.rename(columns={0: 'y'})
-            y_train_strat['buckets'] = pd.qcut(y_train[0], q=nrOfBuckets, labels=bucketLabels)
-
+            buckets = pd.qcut(y_train[0], q=nrOfBuckets, labels=bucketLabels)
             Logcreator.info("Nr of buckets for stratified split: " + str(nrOfBuckets))
         except ValueError:
-            x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed = self.strat_split(x_train, y_train, nrOfBuckets-1)
-            return x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed
-        y_train_strat['buckets_int'] = y_train_strat['buckets'].astype(int)
-        y_train_strat = y_train_strat.drop(['buckets'], axis=1)
+            x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed, buckets = self.strat_split(x_train, y_train, nrOfBuckets-1)
+            return x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed, buckets
+        buckets_int = buckets.astype(int)
 
         """
          Remove samples for which we have only one age class, 
          so that we can do a stratified split
         """
-        # y_train_strat['buckets_int'] = y_train_strat['buckets'].astype(int)
-        counts = y_train_strat['buckets_int'].value_counts()
+        counts = buckets.value_counts()
         Logcreator.info("The number of samples for each 'age/class' are:\n", pd.DataFrame(counts).T)
 
         classes_with_one_el = counts[counts == 1].index.values
         Logcreator.info("'Age' with only one sample:", classes_with_one_el)
 
-        remove_columns = y_train_strat["buckets_int"].isin(classes_with_one_el)
+        remove_columns = buckets_int.isin(classes_with_one_el)
 
         # Save samples/rows we remove
         train_data_x_removed = x_train_strat[remove_columns]
@@ -200,13 +196,14 @@ class Regression:
 
         y_train_strat = y_train_strat[~remove_columns]
         x_train_strat = x_train_strat[~remove_columns]
+        buckets_int = buckets_int[~remove_columns]
 
         size_testset = x_train_strat.shape[0] * 0.1
-        nrClasses = y_train['buckets_int'].nunique()
+        nrClasses = buckets_int.nunique()
         if size_testset < nrClasses:
-            x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed = self.strat_split(x_train, y_train, size_testset)
+            x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed, buckets = self.strat_split(x_train, y_train, size_testset)
             return x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed
-        return x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed
+        return x_train_strat, y_train_strat, train_data_x_removed, train_data_y_removed, buckets_int
 
 
     def get_data_split(self, handin, x_test, x_train, y_train):
@@ -227,16 +224,14 @@ class Regression:
 
 
                 nrBuckets = 30
-                x_train, y_train, train_data_x_removed, train_data_y_removed = self.strat_split(x_train, y_train, nrBuckets)
+                x_train, y_train, train_data_x_removed, train_data_y_removed, buckets = self.strat_split(x_train, y_train, nrBuckets)
                 # Do the stratified split without those samples
                 x_train_split, x_test_split, y_train_split, y_test_split = model_selection.train_test_split(
-                    x_train, y_train, stratify=y_train['buckets_int'], test_size=0.1, random_state=43)
+                    x_train, y_train, stratify=buckets, test_size=0.1, random_state=43)
 
                 # Append the removed samples/rows to the training split
                 x_train_split = x_train_split.append(train_data_x_removed)
                 y_train_split = y_train_split.append(train_data_y_removed)
-                y_train_split = y_train_split.drop(['buckets_int'], axis=1)
-                y_test_split = y_test_split.drop(['buckets_int'], axis=1)
 
                 # TODO maybe move this code to where we need it
                 # reset all indexes(=start from 0) because some transformers remove the index

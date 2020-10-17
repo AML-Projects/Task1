@@ -295,7 +295,7 @@ class Engine:
             predicted_values = regressor.predict(x_test_split)
             score = r2_score(y_true=y_test_split, y_pred=predicted_values)
             Logcreator.info("R2 Score achieved on test set: {}".format(score))
-            self.plot_true_vs_predicted(y_train_split, predicted_values, title="y-test vs. y-test-predicted",
+            self.plot_true_vs_predicted(y_test_split, predicted_values, title="y-test vs. y-test-predicted",
                                         file="test.jpg")
 
         else:

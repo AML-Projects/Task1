@@ -51,6 +51,7 @@ class Engine:
 
         # create output dataframe
         results_out = pd.DataFrame(columns=columns_out)
+        pd.DataFrame.to_csv(results_out, os.path.join(Configuration.output_directory, 'search_results.csv'), index=False)
 
         try:
             # TODO clean up for loops
@@ -110,6 +111,7 @@ class Engine:
                                 score_test = r2_score(y_true=y_test_split, y_pred=predicted_values)
                                 Logcreator.info("R2 Score achieved on test set: {}".format(score_test))
 
+                                output = pd.DataFrame()
                                 for i in range(0,
                                                5):  # append multiple rows of the grid search result, not just the best
                                     # update output
@@ -130,17 +132,14 @@ class Engine:
                                     output_row.extend(list(feature_selector_data.values()))
                                     output_row.extend(list(normalizer_data.values()))
                                     output_row.extend(list(regression_data.values()))
+                                    output = output.append(pd.DataFrame(output_row, index=results_out.columns).T)
 
-
-                                    results_out = results_out.append(
-                                        pd.DataFrame(output_row, index=results_out.columns).T)
-
+                                #Write to csv
+                                pd.DataFrame.to_csv(output, os.path.join(Configuration.output_directory, 'search_results.csv'), index=False, mode='a', header=False)
+                                #Increase loop counter
                                 loop_counter = loop_counter + 1
-
         finally:
-            # save dataframe
-            pd.DataFrame.to_csv(results_out, os.path.join(Configuration.output_directory, 'search_results.csv'),
-                                index=False)
+            Logcreator.info("Search finished")
 
     def get_serach_list(self, config_name):
         param_dict = self.get_serach_params(config_name)

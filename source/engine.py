@@ -220,7 +220,7 @@ class Engine:
 
         self.plot_true_vs_predicted(y_train_split, predicted_values,
                                     title="y-train vs. y-train-predicted",
-                                    file="train.jpg")
+                                    file="train.png")
 
         Logcreator.info("R2 Score achieved on training set: {}".format(score))
 
@@ -230,7 +230,7 @@ class Engine:
 
             self.plot_true_vs_predicted(y_test_split.values.flatten(), predicted_values,
                                         title="y-test vs. y-test-predicted",
-                                        file="test.jpg")
+                                        file="test.png")
 
             Logcreator.info("R2 Score achieved on test set: {}".format(score))
 

@@ -101,7 +101,7 @@ class Engine:
                                 best_model, x_test_split, y_test_split, x_train_split, y_train_split, search_results = \
                                     regressor.fit_predict(
                                         x_train=x_train_norm, y_train=y_train_norm,
-                                        x_test=x_test_norm)
+                                        x_test=x_test_norm, handin=False)
 
                                 predicted_values = best_model.predict(x_train_split)
                                 score_train = r2_score(y_true=y_train_split, y_pred=predicted_values)
@@ -181,106 +181,122 @@ class Engine:
         #    return
 
         # Feature Selection (Remove features with to many nan
-        feature_selector = FeatureSelector()
-        fs_remove_nan = Configuration.get('feature_selector.remove_features_with_many_Nan')
-        if (fs_remove_nan):
-            x_train, y_train, x_test = feature_selector.remove_features_with_many_Nan(x_train,
-                                                                                      y_train,
-                                                                                      x_test)
+        # feature_selector = FeatureSelector()
+        # fs_remove_nan = Configuration.get('feature_selector.remove_features_with_many_Nan')
+        # if (fs_remove_nan):
+        #     x_train, y_train, x_test = feature_selector.remove_features_with_many_Nan(x_train,
+        #                                                                               y_train,
+        #                                                                               x_test)
 
         # Imputer
-        imputer = Imputer()
-        imputer_type = Configuration.get('imputer.name')
-        switcher = {
-            'mean': imputer.mean_simple_imputer,
-            'median': imputer.median_simple_imputer,
-            'iterative': imputer.multivariate_imputer
-        }
-        imp = switcher.get(imputer_type)
-        x_train_imp, y_train_imp, x_test_imp = imp(x_train=x_train, y_train=y_train, x_test=x_test)
+        imputer = Imputer(name=Configuration.get('imputer.name'),
+                          iterative_n_nearest_features=Configuration.get('imputer.iterative_n_nearest_features'),
+                          knn_weights=Configuration.get('imputer.knn_weights'),
+                          knn_n_neighbors=Configuration.get('imputer.knn_n_neighbors'))
+
+        x_train_imp, y_train_imp, x_test_imp = imputer.transform_custom(x_train=x_train, y_train=y_train, x_test=x_test)
+        # imputer_type = imputer.name
+        # switcher = {
+        #     'mean': imputer.mean_simple_imputer,
+        #     'median': imputer.median_simple_imputer,
+        #     'iterative': imputer.multivariate_imputer
+        # }
+        # imp = switcher.get(imputer_type)
+        # x_train_imp, y_train_imp, x_test_imp = imp(x_train=x_train, y_train=y_train, x_test=x_test)
 
         # Outliers
         outliers = Outliers(strategy=Configuration.get('outliers.customOR.method'),
                             threshold=Configuration.get('outliers.customOR.threshold'),
-                            fit_on=Configuration.get('outliers.fit_on'))
-        outliers_method = Configuration.get('outliers.name')
-        switcher = {
-            'lof': outliers.LOF,
-            'iforest': outliers.iForest,
-            'customOR': outliers.customOR
-        }
-        outl = switcher.get(outliers_method)
-        x_train_outl, y_train_outl, x_test_outl = outl(x_train=x_train_imp, y_train=y_train_imp, x_test=x_test_imp)
+                            fit_on=Configuration.get('outliers.fit_on'),
+                            name=Configuration.get('outliers.name'))
+        x_train_outl, y_train_outl, x_test_outl = outliers.transform_custom(x_train=x_train_imp, y_train=y_train_imp, x_test=x_test_imp)
+        # outliers_method = outliers.name
+        # switcher = {
+        #     'lof': outliers.LOF,
+        #     'iforest': outliers.iForest,
+        #     'customOR': outliers.customOR
+        # }
+        # outl = switcher.get(outliers_method)
+        # x_train_outl, y_train_outl, x_test_outl = outl(x_train=x_train_imp, y_train=y_train_imp, x_test=x_test_imp)
 
         # Feature selection
-        feature_selector = FeatureSelector(k=Configuration.get('feature_selector.selectBestK_par.k'),
-                                           remove_correlated_threshold=Configuration.get(
-                                               'feature_selector.remove_correlated_features_par.threshold'))
-
-        x_train_fs = x_train_outl
-        y_train_fs = y_train_outl
-        x_test_fs = x_test_outl
-        fs_remove_constant = Configuration.get('feature_selector.remove_constant_features')
-        if (fs_remove_constant):
-            x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_constant_features(x_train_fs,
-                                                                                          y_train_fs,
-                                                                                          x_test_fs)
-            threshold = Configuration.get('feature_selector.remove_constant_features_par.threshold')
-            x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_constant_features(pd.DataFrame(x_train_fs),
-                                                                                          pd.DataFrame(y_train_fs),
-                                                                                          pd.DataFrame(x_test_fs),
-                                                                                          threshold)
-        # We do not remove duplicates as there are no duplicate features in the dataset
-        fs_remove_duplicate = False
-        if (fs_remove_duplicate):
-            x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_duplicates(x_train_fs,
-                                                                                   y_train_fs,
-                                                                                   x_test_fs)
-
-        fs_remove_correlated = Configuration.get('feature_selector.remove_correlated_features')
-        if (fs_remove_correlated):
-            x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_correlated_features(x_train_fs,
-                                                                                            y_train_fs,
-                                                                                            x_test_fs)
-        fs_selectBestK = Configuration.get('feature_selector.selectBestK')
-        if (fs_selectBestK):
-            x_train_fs, y_train_fs, x_test_fs = feature_selector.selectBestK(x_train_fs,
-                                                                             y_train_fs,
-                                                                             x_test_fs)
-        fs_selectBestBasedOnImpurity = Configuration.get('feature_selector.selectBestBasedOnImpurity')
-        if (fs_selectBestBasedOnImpurity):
-            x_train_fs, y_train_fs, x_test_fs = feature_selector.selectBestBasedOnImpurity(x_train_fs,
-                                                                                           y_train_fs,
-                                                                                           x_test_fs)
+        feature_selector = FeatureSelector(remove_constant=Configuration.get('feature_selector.remove_constant_features'),
+                                           remove_constant_threshold=Configuration.get('feature_selector.remove_constant_features_par.threshold'),
+                                           remove_correlated=Configuration.get('feature_selector.remove_correlated_features'),
+                                           remove_correlated_threshold=Configuration.get('feature_selector.remove_correlated_features_par.threshold'),
+                                           use_select_best_k=Configuration.get('feature_selector.selectBestK'),
+                                           k=Configuration.get('feature_selector.selectBestK_par.k'),
+                                           use_select_best_based_on_impurity=Configuration.get('feature_selector.selectBestBasedOnImpurity')
+                                           )
+        x_train_feat, y_train_feat, x_test_feat = feature_selector.transform_custom(x_train=x_train_outl, y_train=y_train_outl, x_test=x_test_outl)
+        # x_train_fs = x_train_outl
+        # y_train_fs = y_train_outl
+        # x_test_fs = x_test_outl
+        # fs_remove_constant = Configuration.get('feature_selector.remove_constant_features')
+        # if (fs_remove_constant):
+        #     x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_constant_features(x_train_fs,
+        #                                                                                   y_train_fs,
+        #                                                                                   x_test_fs)
+        #     threshold = Configuration.get('feature_selector.remove_constant_features_par.threshold')
+        #     x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_constant_features(pd.DataFrame(x_train_fs),
+        #                                                                                   pd.DataFrame(y_train_fs),
+        #                                                                                   pd.DataFrame(x_test_fs),
+        #                                                                                   threshold)
+        # # We do not remove duplicates as there are no duplicate features in the dataset
+        # fs_remove_duplicate = False
+        # if (fs_remove_duplicate):
+        #     x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_duplicates(x_train_fs,
+        #                                                                            y_train_fs,
+        #                                                                            x_test_fs)
+        #
+        # fs_remove_correlated = Configuration.get('feature_selector.remove_correlated_features')
+        # if (fs_remove_correlated):
+        #     x_train_fs, y_train_fs, x_test_fs = feature_selector.remove_correlated_features(x_train_fs,
+        #                                                                                     y_train_fs,
+        #                                                                                     x_test_fs)
+        # fs_selectBestK = Configuration.get('feature_selector.selectBestK')
+        # if (fs_selectBestK):
+        #     x_train_fs, y_train_fs, x_test_fs = feature_selector.selectBestK(x_train_fs,
+        #                                                                      y_train_fs,
+        #                                                                      x_test_fs)
+        # fs_selectBestBasedOnImpurity = Configuration.get('feature_selector.selectBestBasedOnImpurity')
+        # if (fs_selectBestBasedOnImpurity):
+        #     x_train_fs, y_train_fs, x_test_fs = feature_selector.selectBestBasedOnImpurity(x_train_fs,
+        #                                                                                    y_train_fs,
+        #                                                                                    x_test_fs)
 
         # Normalizer
-        normalizer = Normalizer(name=Configuration.get('normalizer.name'), fit_on=Configuration.get('normalizer.fit_on'))
-        normalizer_method = Configuration.get('normalizer.name')
-        switcher = {
-            'stdscaler': normalizer.standard_scaler,
-            'minmaxscaler': normalizer.minmax_scaler,
-            'robustscaler': normalizer.robust_scaler
-        }
-        norm = switcher.get(normalizer_method)
-        x_train_norm, y_train_norm, x_test_norm = norm(x_train=x_train_fs, y_train=y_train_fs, x_test=x_test_fs)
+        normalizer = Normalizer(name=Configuration.get('normalizer.name'),
+                                fit_on=Configuration.get('normalizer.fit_on'))
+        x_train_norm, y_train_norm, x_test_norm = normalizer.transform_custom(x_train=x_train_feat, y_train=y_train_feat, x_test=x_test_feat)
+        # normalizer_method = Configuration.get('normalizer.name')
+        # switcher = {
+        #     'stdscaler': normalizer.standard_scaler,
+        #     'minmaxscaler': normalizer.minmax_scaler,
+        #     'robustscaler': normalizer.robust_scaler
+        # }
+        # norm = switcher.get(normalizer_method)
+        # x_train_norm, y_train_norm, x_test_norm = norm(x_train=x_train_fs, y_train=y_train_fs, x_test=x_test_fs)
 
         # Regression
-        regression = Regression()
-        regression_method = Configuration.get('regression.name')
-        switcher = {
-            'ridge': regression.ridge_regression,
-            'svr': regression.svr_regression,
-            'xgb': regression.xgboost_regression,
-            'elastic': regression.elastic_net_regression
-        }
-        reg = switcher.get(regression_method)
-        regressor, x_test_split, y_test_split, x_train_split, y_train_split, search_results = \
-            reg(x_train=x_train_norm,
-                y_train=y_train_norm,
-                x_test=x_test_norm,
-                handin=argumenthelper.get_args().handin)
 
-        return regressor, x_test_split, y_test_split, x_train_split, y_train_split
+        regression = Regression(name=Configuration.get('regression.name'),
+                                stratified_split=Configuration.get('regression.stratified_split'))
+        # regression_method = Configuration.get('regression.name')
+        # switcher = {
+        #     'ridge': regression.ridge_regression,
+        #     'svr': regression.svr_regression,
+        #     'xgb': regression.xgboost_regression
+        # }
+        # reg = switcher.get(regression_method)
+        regressor, x_test_split, y_test_split, x_train_split, y_train_split, search_results = regression.fit_predict(x_train=x_train_norm, y_train=y_train_norm, x_test=x_test_norm, handin=argumenthelper.get_args().handin)
+        # reg(x_train=x_train_norm,
+        #         y_train=y_train_norm,
+        #         x_test=x_test_norm,
+        #         handin=argumenthelper.get_args().handin)
+
+        return regressor, x_test_split, y_test_split, x_train_split, y_train_split, search_results
+
 
     def predict(self, regressor, x_test_split, y_test_split, x_test_index, x_train_split, y_train_split):
         predicted_values = regressor.predict(x_train_split)

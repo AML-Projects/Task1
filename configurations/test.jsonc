@@ -9,6 +9,7 @@
     },
     "outliers": {
 		"name": "lof",
+        "contamination":"auto",
 		"fit_on" : "train",
 		"customOR": {
 			"method" : "iqr",

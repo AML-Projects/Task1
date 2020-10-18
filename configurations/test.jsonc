@@ -31,6 +31,8 @@
 			"k" : 200
 		},
         "selectBestBasedOnImpurity" : "False",
+        "lda_on" : "True",
+        "lda_n_components" : "None"
     },
 	"normalizer": {
 		"name": "robustscaler",

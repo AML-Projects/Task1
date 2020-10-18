@@ -13,7 +13,8 @@ from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_info_regression, SelectFromModel
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.preprocessing import RobustScaler
+from sklearn.linear_model import Lasso, ElasticNet
+from sklearn.preprocessing import RobustScaler, StandardScaler
 
 from logcreator.logcreator import Logcreator
 
@@ -55,7 +56,9 @@ class FeatureSelector:
                  use_select_best_k,
                  k,
                  use_select_best_based_on_impurity,
-                 lda_on=True,
+                 lasso_alpha=0.2,
+                 lasso_on=False,
+                 lda_on=False,
                  lda_n_components=None,
                  pca_explained_var_threshold=0.99  # explained_var between 0 and 1
                  ):
@@ -67,6 +70,8 @@ class FeatureSelector:
             remove_correlated = remove_correlated == "True"
         if isinstance(use_select_best_k, str):
             use_select_best_k = use_select_best_k == "True"
+        if isinstance(lasso_on, str):
+            lasso_on = lasso_on == "True"
         if isinstance(lda_on, str):
             use_lda = lda_on == "True"
         if isinstance(lda_n_components, str):
@@ -82,6 +87,8 @@ class FeatureSelector:
         self.correlation_threshold = remove_correlated_threshold
         self.use_select_best_k = use_select_best_k
         self.k = k
+        self.lasso_alpha = lasso_alpha
+        self.lasso_on = lasso_on
         self.lda_on = lda_on
         self.lda_n_components = lda_n_components
         self.use_selectBestBasedOnImpurity = use_select_best_based_on_impurity
@@ -115,6 +122,9 @@ class FeatureSelector:
         if fs_do_pca:
             # gives very bad results
             x_train, y_train, x_test = self.selectTransformWithPCA(x_train, y_train, x_test)
+
+        if self.lasso_on:
+            x_train, y_train, x_test = self.selectedBasedOnLasso(x_train, y_train, x_test)
 
         if self.use_select_best_k:
             x_train, y_train, x_test = self.selectBestK(x_train,
@@ -252,6 +262,28 @@ class FeatureSelector:
         Logcreator.info("TreeBasedFeatureSelector", " -> nr features: ", str(x_train_best.shape[1]))
 
         return x_train_best, y_train, x_test_best
+
+    def selectedBasedOnLasso(self, x_train, y_train, x_test):
+        Logcreator.info("\nLasso:")
+        # scaling because we fit an estimator
+        rs = StandardScaler()
+        x_train = rs.fit_transform(x_train)
+        x_test = rs.transform(x_test)
+
+        estimator = Lasso(alpha=self.lasso_alpha, max_iter=10e4, random_state=41)
+        # estimator = ElasticNet(alpha=self.lasso_alpha, max_iter=10e4, l1_ratio=0.8, random_state=41)
+
+        estimator.fit(x_train, y_train)
+        selector = SelectFromModel(estimator=estimator)  # , max_features=80, threshold=-np.inf)
+
+        x_train_lasso = selector.fit_transform(x_train, y_train)
+        x_test_lasso = selector.transform(x_test)
+
+        Logcreator.info("LASSO alpha:", self.lasso_alpha,
+                        " -> removed: " + str(x_train.shape[1] - x_train_lasso.shape[1]) + " features")
+        Logcreator.info("LASSO", " -> nr features: ", str(x_train_lasso.shape[1]))
+
+        return x_train_lasso, y_train, x_test_lasso
 
     def LDA(self, x_train, y_train, x_test):
         Logcreator.info("\nLDA")

@@ -202,7 +202,9 @@ class Engine:
             k=Configuration.get('feature_selector.selectBestK_par.k'),
             use_select_best_based_on_impurity=Configuration.get('feature_selector.selectBestBasedOnImpurity'),
             lda_on=Configuration.get('feature_selector.lda_on'),
-            lda_n_components=Configuration.get('feature_selector.lda_n_components'))
+            lda_n_components=Configuration.get('feature_selector.lda_n_components'),
+            lasso_on=Configuration.get('feature_selector.lasso_on'),
+            lasso_alpha=Configuration.get('feature_selector.lasso_alpha'))
         x_train_feat, y_train_feat, x_test_feat = feature_selector.transform_custom(x_train=x_train_outl, y_train=y_train_outl, x_test=x_test_outl)
 
         # Normalizer

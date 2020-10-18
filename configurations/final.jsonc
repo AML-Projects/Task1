@@ -10,7 +10,7 @@
     "outliers": {
         "contamination":"auto",
 		"name": "lof",
-		"fit_on" : "test",
+		"fit_on" : "train",
 		"customOR": {
 			"method" : "z-score",
 			"threshold" : 8
@@ -26,12 +26,14 @@
 		"remove_correlated_features_par" : {
 			"threshold" : 0.8
 		},
-        "selectBestK" : "False",
+        "selectBestK" : "True",
 		"selectBestK_par" : {
-			"k" : 80
+			"k" : 100
 		},
         "selectBestBasedOnImpurity" : "False",
-        "lda_on" : "True",
+        "lasso_alpha" : 0.2,
+        "lasso_on" : "True",
+        "lda_on" : "False",
         "lda_n_components" : "None"
     },
 	"normalizer": {

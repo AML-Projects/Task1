@@ -1,0 +1,46 @@
+{
+    "environment": {
+        "name" : "describe the run",
+        "output_path": "trainings",
+        "log_file" : "logs.txt"
+    },
+    "imputer": {
+        "name": "median"
+    },
+    "outliers": {
+        "contamination":"auto",
+		"name": "lof",
+		"fit_on" : "test",
+		"customOR": {
+			"method" : "z-score",
+			"threshold" : 8
+		}
+    },
+    "feature_selector": {
+		"remove_features_with_many_Nan" : "False",
+        "remove_constant_features" : "True",
+		"remove_constant_features_par": {
+			"threshold": 0.01
+		},
+        "remove_correlated_features" : "True",
+		"remove_correlated_features_par" : {
+			"threshold" : 0.8
+		},
+        "selectBestK" : "True",
+		"selectBestK_par" : {
+			"k" : 80
+		},
+        "selectBestBasedOnImpurity" : "False",
+        "lasso_alpha" : 0.2,
+        "lasso_on" : "True",
+        "lda_on" : "False",
+        "lda_n_components" : "None"
+    },
+	"normalizer": {
+		"name": "robustscaler",
+		"fit_on" : "train"
+	},
+	"regression": {
+		"name": "xgb"
+	}
+}
